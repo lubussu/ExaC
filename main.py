@@ -3,6 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-df = pd.read_csv('./dataset/allexoplanets.csv')
-print(df.sort_values('pl_name'))
+df = pd.read_csv('./dataset/allexoplanets.csv', low_memory=False)
+print(df.columns)
 
