@@ -11,8 +11,8 @@ def pre_process():
     nunique = kepler.nunique()
     cols_to_drop = nunique[nunique == 1].index
 
-    kepler.dropna(thresh=thresh, axis=1, inplace=True)
     kepler.drop(cols_to_drop, axis=1)
+    kepler.dropna(thresh=thresh, axis=1, inplace=True)
 
     print(kepler['koi_disposition'].unique())
     print(kepler.columns.size)

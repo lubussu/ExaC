@@ -12,7 +12,8 @@ def pre_process():
     nunique = k2.nunique()
     cols_to_drop = nunique[nunique == 1].index
 
-    k2.dropna(thresh=thresh, axis=1, inplace=True)
     k2.drop(cols_to_drop, axis=1)
+    k2.dropna(thresh=thresh, axis=1, inplace=True)
+
     print(k2['disposition'].unique())
     print(k2.columns.size)

@@ -16,8 +16,8 @@ def pre_process():
     nunique = tess.nunique()
     cols_to_drop = nunique[nunique == 1].index
 
-    tess.dropna(thresh=thresh, axis=1, inplace=True)
     tess.drop(cols_to_drop, axis=1)
+    tess.dropna(thresh=thresh, axis=1, inplace=True)
 
     print(tess['tfopwg_disp'].unique())
     print(tess.columns.size)
