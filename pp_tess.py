@@ -11,13 +11,13 @@ def pre_process():
     tess['tfopwg_disp'].replace(
         {"FP": "FALSE POSITIVE", "KP": "CONFIRMED", "CP": "CONFIRMED", "PC": "CANDIDATE", "APC": "CANDIDATE"},
         inplace=True)
+
     thresh = len(tess) * .7
+    tess.dropna(thresh=thresh, axis=1, inplace=True)
 
     nunique = tess.nunique()
     cols_to_drop = nunique[nunique == 1].index
-
-    tess.drop(cols_to_drop, axis=1)
-    tess.dropna(thresh=thresh, axis=1, inplace=True)
+    tess.drop(cols_to_drop, axis=1, inplace=True)
 
     print(tess['tfopwg_disp'].unique())
     print(tess.columns.size)
