@@ -15,5 +15,9 @@ def pre_process():
     cols_to_drop = nunique[nunique == 1].index
     k2.drop(cols_to_drop, axis=1, inplace=True)
 
+    k2.drop_duplicates(subset=['pl_name'], keep='last')
+
     print(k2['disposition'].unique())
     print(k2.columns.size)
+
+    # k2.to_csv('./dataset/k2.csv')

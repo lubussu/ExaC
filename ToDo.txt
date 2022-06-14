@@ -1,0 +1,3 @@
+eliminare colonne descrittive da k2
+eliminare colonne *_errX da kepler e k2
+normalizzare i due dataset ed unirli
