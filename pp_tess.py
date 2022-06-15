@@ -19,9 +19,9 @@ def pre_process():
     cols_to_drop = nunique[nunique == 1].index
     tess.drop(cols_to_drop, axis=1, inplace=True)
 
-    tess.drop_duplicates(subset=['toi'], keep='last')
+    tess.drop_duplicates(subset='toi', keep='first')
 
     print(tess['tfopwg_disp'].unique())
     print(tess.columns.size)
 
-    # tess.to_csv('./dataset/tess.csv')
+    tess.to_csv('./dataset/tess.csv')

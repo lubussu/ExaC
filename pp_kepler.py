@@ -21,9 +21,9 @@ def pre_process():
     cols_unique_drop = nunique[nunique == 1].index
     kepler.drop(cols_unique_drop, axis=1, inplace=True)
 
-    kepler.drop_duplicates(subset=['kepoi_name'], keep='last')
+    kepler.drop_duplicates(subset='kepoi_name', keep='first')
 
     print(kepler['koi_disposition'].unique())
     print(kepler.columns.size)
 
-    # kepler.to_csv('./dataset/kepler.csv')
+    kepler.to_csv('./dataset/kepler.csv')
