@@ -18,7 +18,7 @@ def pre_process():
                  'st_nspec'],
         inplace=True)
 
-    thresh = len(k2) * .7
+    thresh = len(k2) * .5
     k2.dropna(thresh=thresh, axis=1, inplace=True) #remove columns with less than 70% of not nan values
 
     nunique = k2.nunique() #series with numner of unique value for each column
@@ -32,4 +32,8 @@ def pre_process():
 
     print("k2 next attributes: " + str(k2.columns.size))
 
+    thresh = k2.columns.size * .8
+    k2.dropna(thresh=thresh, axis=0, inplace=True) #remove columns with less than 70% of not nan values
+
+    return k2
     #k2.to_csv('./dataset/k2.csv')

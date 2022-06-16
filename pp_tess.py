@@ -19,7 +19,7 @@ def pre_process():
                  'toi_created', 'rowupdate'],
         inplace=True)
 
-    thresh = len(tess) * .7
+    thresh = len(tess) * .5
     tess.dropna(thresh=thresh, axis=1, inplace=True)  # remove columns with less than 70% of not nan values
 
     nunique = tess.nunique()  # series with numner of unique value for each column
@@ -33,4 +33,9 @@ def pre_process():
 
     print("tess next attributes:" + str(tess.columns.size))
 
+    thresh = tess.columns.size * .8
+    tess.dropna(thresh=thresh, axis=0, inplace=True) #remove columns with less than 70% of not nan values
+
     #tess.to_csv('./dataset/tess.csv')
+
+    return tess

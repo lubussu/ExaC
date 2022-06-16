@@ -15,7 +15,7 @@ def pre_process():
                  'koi_trans_mod', 'koi_model_dof', 'koi_datalink_dvr', 'koi_datalink_dvs', 'koi_sparprov'],
         inplace=True)
 
-    thresh = len(kepler) * .7
+    thresh = len(kepler) * .5
     kepler.dropna(thresh=thresh, axis=1, inplace=True) #remove columns with less than 70% of not nan values
 
     nunique = kepler.nunique() #series with numner of unique value for each column
@@ -28,4 +28,8 @@ def pre_process():
     kepler = kepler[kepler.columns.drop(list(kepler.filter(regex='lim')))] #remove columns that contains lim in attribute name
     print("kepler next attributes: " + str(kepler.columns.size))
 
-    #kepler.to_csv('./dataset/kepler.csv')
+    thresh = kepler.columns.size * .8
+    kepler.dropna(thresh=thresh, axis=0, inplace=True) #remove columns with less than 70% of not nan values
+
+    kepler.to_csv('./dataset/kepler.csv')
+    return kepler

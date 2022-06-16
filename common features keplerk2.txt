@@ -9,7 +9,7 @@ pl_orbeccen/koi_eccen
 pl_insol/koi_insol
 pl_eqt/koi_teq
 pl_orbincl/koi_incl
-pl_orbIper/koi_longp
+pl_orblper/koi_longp
 pl_imppar/koi_impact
 pl_trandur/koi_duration
 pl_trandep/koi_depth
