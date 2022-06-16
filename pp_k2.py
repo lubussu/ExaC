@@ -8,6 +8,7 @@ def pre_process():
     k2 = pd.read_csv('./dataset/K2 Objects of Interests.csv', on_bad_lines='skip')
     k2 = k2.dropna(subset=['disposition'])
 
+    print("k2 prev attributes: " + str(k2.columns.size))
     k2.drop(
         columns=['rowid', 'hostname', 'epic_hostname', 'tic_id', 'gaia_id', 'default_flag', 'disp_refname',
                  'discoverymethod', 'disc_year', 'disc_refname', 'disc_pubdate', 'disc_locale', 'disc_facility',
@@ -19,15 +20,17 @@ def pre_process():
         inplace=True)
 
     thresh = len(k2) * .7
-    k2.dropna(thresh=thresh, axis=1, inplace=True)
+    k2.dropna(thresh=thresh, axis=1, inplace=True) #remove columns with less than 70% of not nan values
 
-    nunique = k2.nunique()
-    cols_to_drop = nunique[nunique == 1].index
+    nunique = k2.nunique() #series with numner of unique value for each column
+    cols_to_drop = nunique[nunique == 1].index #indexes of columns with value of nunique == 1
     k2.drop(cols_to_drop, axis=1, inplace=True)
 
-    k2.drop_duplicates(subset='pl_name', keep='first', inplace=True)
+    k2.drop_duplicates(subset='pl_name', keep='first', inplace=True) #remove rows with duplicate value of kepoi_name column
 
-    print(k2['disposition'].unique())
-    print(k2.columns.size)
+    k2 = k2[k2.columns.drop(list(k2.filter(regex='err')))] #remove columns that contains err in attribute name
+    k2 = k2[k2.columns.drop(list(k2.filter(regex='lim')))] #remove columns that contains lim in attribute name
 
-    k2.to_csv('./dataset/k2.csv')
+    print("k2 next attributes: " + str(k2.columns.size))
+
+    #k2.to_csv('./dataset/k2.csv')
