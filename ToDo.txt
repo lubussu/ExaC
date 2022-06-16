@@ -1,3 +1,5 @@
-eliminare colonne descrittive da k2
-eliminare colonne *_errX da kepler e k2
+ricontrollare gli attributi in comune tra k2 e kepler
 normalizzare i due dataset ed unirli
+normalizzare ed unire i tre dataset
+controllare altri attributi da eliminare nei singoli dataset
+creare le correlation matrix

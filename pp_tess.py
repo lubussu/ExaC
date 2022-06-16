@@ -15,7 +15,7 @@ def pre_process():
     print("tess prev attributes:" + str(tess.columns.size))
 
     tess.drop(
-        columns=['toipfx', 'ctoi_alias', 'pl_pnum', 'rastr', 'decstr',
+        columns=['rowid', 'toipfx', 'tid', 'ctoi_alias', 'pl_pnum', 'rastr', 'decstr',
                  'toi_created', 'rowupdate'],
         inplace=True)
 
@@ -33,4 +33,4 @@ def pre_process():
 
     print("tess next attributes:" + str(tess.columns.size))
 
-    # tess.to_csv('./dataset/tess.csv')
+    #tess.to_csv('./dataset/tess.csv')
