@@ -1,5 +1,7 @@
-pl_orbper/koi_period
-pl_rade/koi_prad
+k2/kepler/tess
+
+pl_orbper/koi_period/pl_orbper
+pl_rade/koi_prad/pl_rade
 pl_orbsmax/koi_sma
 pl_dens/koi_srho
 pl_orbeccen/koi_eccen
@@ -19,6 +21,6 @@ st_met/koi_smet
 st_rad/koi_srad
 st_mass/koi_smass
 st_age/koi_sage
-ra/ra
-dec/dec
+ra/ra/ra
+dec/dec/dec
 sy_kepmag/koi_kepmag

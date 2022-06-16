@@ -12,6 +12,11 @@ def pre_process():
         {"FP": "FALSE POSITIVE", "KP": "CONFIRMED", "CP": "CONFIRMED", "PC": "CANDIDATE", "APC": "CANDIDATE"},
         inplace=True)
 
+    tess.drop(
+        columns=['toipfx', 'ctoi_alias', 'pl_pnum', 'rastr', 'decstr',
+                 'toi_created', 'rowupdate'],
+        inplace=True)
+
     thresh = len(tess) * .7
     tess.dropna(thresh=thresh, axis=1, inplace=True)
 
