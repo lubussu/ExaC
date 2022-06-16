@@ -1,0 +1,15 @@
+k2/kepler/tess
+
+pl_orbper/koi_period/pl_orbper
+pl_rade/koi_prad/pl_rade
+pl_orbeccen/koi_eccen
+pl_insol/koi_insol/pl_insol
+pl_eqt/koi_teq/pl_eqt
+pl_trandur/koi_duration/pl_trandurh
+pl_trandep/koi_depth/pl_trandep
+st_teff/koi_steff/st_teff
+st_logg/koi_slogg/st_logg
+st_rad/koi_srad/st_rad
+ra/ra/ra
+dec/dec/dec
+sy_kepmag/koi_kepmag/st_tmag
