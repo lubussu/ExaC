@@ -12,21 +12,20 @@ def pre_process():
         {"FP": "FALSE POSITIVE", "KP": "CONFIRMED", "CP": "CONFIRMED", "PC": "CANDIDATE", "APC": "CANDIDATE"},
         inplace=True)
 
-    tess.drop(
-        columns=['toipfx', 'ctoi_alias', 'pl_pnum', 'rastr', 'decstr',
-                 'toi_created', 'rowupdate'],
-        inplace=True)
-
+    print("tess prev attributes:" + str(tess.columns.size))
     thresh = len(tess) * .7
-    tess.dropna(thresh=thresh, axis=1, inplace=True)
+    tess.dropna(thresh=thresh, axis=1, inplace=True) #remove columns with less than 70% of not nan values
 
-    nunique = tess.nunique()
-    cols_to_drop = nunique[nunique == 1].index
+    nunique = tess.nunique() #series with numner of unique value for each column
+    cols_to_drop = nunique[nunique == 1].index #indexes of columns with value of nunique == 1
     tess.drop(cols_to_drop, axis=1, inplace=True)
 
-    tess.drop_duplicates(subset='toi', keep='first')
+    tess.drop_duplicates(subset='toi', keep='first') #remove rows with duplicate value of kepoi_name column
 
-    print(tess['tfopwg_disp'].unique())
-    print(tess.columns.size)
+    tess = tess[tess.columns.drop(list(tess.filter(regex='err')))] #remove columns that contains err in attribute name
+    tess = tess[tess.columns.drop(list(tess.filter(regex='lim')))] #remove columns that contains lim in attribute name
 
-    tess.to_csv('./dataset/tess.csv')
+    print("tess next attributes:" + str(tess.columns.size))
+
+
+    #tess.to_csv('./dataset/tess.csv')
