@@ -2,6 +2,7 @@ k2/kepler
 
 pl_orbper/koi_period
 pl_rade/koi_prad
+pl_orbeccen/koi_eccen
 pl_orbsmax/koi_sma
 pl_dens/koi_srho
 pl_orbeccen/koi_eccen

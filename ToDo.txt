@@ -1,4 +1,3 @@
-ricontrollare gli attributi in comune tra k2 e kepler
 normalizzare i due dataset ed unirli
 normalizzare ed unire i tre dataset
 controllare altri attributi da eliminare nei singoli dataset
