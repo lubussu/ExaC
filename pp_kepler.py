@@ -34,8 +34,8 @@ def pre_process():
     kepler.dropna(thresh=thresh, axis=0, inplace=True)  # remove columns with less than 70% of not nan values
 
     # remove attributes with a value of corr_m > 0.95 (see on the visual correlation matrix)
-    # kepler.drop(columns=['koi_gmag', 'koi_rmag', 'koi_imag', 'koi_zmag', 'koi_jmag',
-    #                      'koi_hmag', 'koi_kmag'])
+    kepler.drop(columns=['koi_fwm_sra', 'koi_fwm_sdec', 'koi_gmag', 'koi_rmag', 'koi_imag', 'koi_zmag', 'koi_jmag',
+                         'koi_hmag', 'koi_kmag', 'koi_ldm_coeff2'])
 
     kepler.to_csv('./dataset/pp_dataset/kepler.csv')
     return kepler
