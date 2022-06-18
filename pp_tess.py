@@ -36,6 +36,5 @@ def pre_process():
     thresh = tess.columns.size * .8
     tess.dropna(thresh=thresh, axis=0, inplace=True) #remove columns with less than 70% of not nan values
 
-    #tess.to_csv('./dataset/tess.csv')
-
+    tess.to_csv('./dataset/pp_dataset/tess.csv')
     return tess

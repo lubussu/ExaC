@@ -39,19 +39,12 @@ def data_integration():
 
     tess.rename(columns={"toi": "pl_name", "tfopwg_disp": "disposition"}, inplace=True)
 
-    print(kepler.columns)
     common_cols = list(set.intersection(set(k2), set(kepler), set(tess)))
     k2 = k2[k2.columns.intersection(common_cols)]
     kepler = kepler[kepler.columns.intersection(common_cols)]
     tess = tess[tess.columns.intersection(common_cols)]
 
-    print(len(k2))
-    print(k2.columns.size)
-    print(len(kepler))
-    print(kepler.columns.size)
-    print(len(tess))
-    print(tess.columns.size)
-
     dataframe = pd.concat([k2, kepler, tess], ignore_index=True)
-    print(dataframe)
+    print("Columns of merged dataset: " + str(dataframe.columns.size))
+    #dataframe.to_csv('./dataset/pp_dataset/merged_dataset.csv')
 

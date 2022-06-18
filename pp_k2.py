@@ -35,5 +35,5 @@ def pre_process():
     thresh = k2.columns.size * .8
     k2.dropna(thresh=thresh, axis=0, inplace=True) #remove columns with less than 70% of not nan values
 
+    k2.to_csv('./dataset/pp_dataset/k2.csv')
     return k2
-    #k2.to_csv('./dataset/k2.csv')
