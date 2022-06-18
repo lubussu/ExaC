@@ -35,5 +35,9 @@ def pre_process():
     thresh = k2.columns.size * .8
     k2.dropna(thresh=thresh, axis=0, inplace=True) #remove columns with less than 70% of not nan values
 
+    #remove attributes with a value of corr_m > 0.95 (see on the visual correlation matrix)
+    k2.drop(columns=['tran_flag', 'sy_gaiamag', 'sy_jmag', 'sy_hmag', 'sy_kmag',
+                     'sy_tmag'])
+
     k2.to_csv('./dataset/pp_dataset/k2.csv')
     return k2
