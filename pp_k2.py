@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.impute import KNNImputer
 
 
 def pre_process():
@@ -16,7 +17,7 @@ def pre_process():
                  'disc_telescope',
                  'disc_instrument', 'soltype', 'pl_controv_flag', 'pl_refname', 'pl_tsystemref', 'st_refname',
                  'sy_refname', 'rowupdate', 'pl_pubdate', 'releasedate', 'pl_nnotes', 'st_nphot', 'st_nrvc',
-                 'st_nspec'],
+                 'st_nspec', 'pl_letter', 'k2_name', 'rastr', 'decstr'],
         inplace=True)
 
     k2['disposition'].replace(
@@ -47,5 +48,17 @@ def pre_process():
                      'sy_tmag'], inplace=True)
 
     print("k2 next attributes: " + str(k2.columns.size))
-    k2.to_csv('./dataset/pp_dataset/k2.csv')
+
+    # k22 = k2.drop(columns=['pl_name', 'disposition'])
+    #
+    # imputer = KNNImputer(n_neighbors=5, weights='uniform', metric='nan_euclidean')
+    # k2_filled = pd.DataFrame(imputer.fit_transform(k22), columns=k22.columns)
+    #
+    # print(k2_filled.isnull().sum())
+    #
+    # extracted_col = k2['pl_name', 'disposition']
+    # k2_filled = k2_filled.join(extracted_col)
+    # 
+    # k2.to_csv('./dataset/pp_dataset/k2.csv')
+    # k2_filled.to_csv('./dataset/pp_dataset/k2_filled.csv')
     return k2

@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.impute import KNNImputer
 
 
 def pre_process():
@@ -35,6 +36,21 @@ def pre_process():
     thresh = tess.columns.size * .8
     tess.dropna(thresh=thresh, axis=0, inplace=True) #remove columns with less than 70% of not nan values
 
-    print("tess next attributes:" + str(tess.columns.size))
     tess.to_csv('./dataset/pp_dataset/tess.csv')
+
+    print("tess next attributes:" + str(tess.columns.size))
+
+    tess2 = tess.drop(columns=['toi', 'tfopwg_disp'])
+
+    imputer = KNNImputer(n_neighbors=5, weights='uniform', metric='nan_euclidean')
+    tess_filled = pd.DataFrame(imputer.fit_transform(tess2), columns=tess2.columns)
+
+    print(tess_filled.isnull().sum())
+
+    name_col = tess['toi']
+    disposition_col = tess['tfopwg_disp']
+    tess_filled = tess_filled.join(name_col)
+    tess_filled = tess_filled.join(disposition_col)
+
+    tess_filled.to_csv('./dataset/pp_dataset/tess_filled.csv')
     return tess

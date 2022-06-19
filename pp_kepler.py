@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.impute import KNNImputer
 
 
 def pre_process():
@@ -29,10 +30,8 @@ def pre_process():
 
     kepler.drop_duplicates(subset='kepoi_name', keep='first')  # remove rows with duplicate value of kepoi_name column
 
-    kepler = kepler[
-        kepler.columns.drop(list(kepler.filter(regex='err')))]  # remove columns that contains err in attribute name
-    kepler = kepler[
-        kepler.columns.drop(list(kepler.filter(regex='lim')))]  # remove columns that contains lim in attribute name
+    kepler = kepler[kepler.columns.drop(list(kepler.filter(regex='err')))]  # remove columns that contains err in attribute name
+    kepler = kepler[kepler.columns.drop(list(kepler.filter(regex='lim')))]  # remove columns that contains lim in attribute name
 
     thresh = kepler.columns.size * .8
     kepler.dropna(thresh=thresh, axis=0, inplace=True)  # remove columns with less than 70% of not nan values
@@ -44,5 +43,21 @@ def pre_process():
                          'koi_hmag', 'koi_kmag', 'koi_ldm_coeff2'], inplace=True)
 
     print("kepler next attributes: " + str(kepler.columns.size))
+
     kepler.to_csv('./dataset/pp_dataset/kepler.csv')
+
+    kepler2 = kepler.drop(columns=['kepoi_name', 'koi_disposition'])
+
+    imputer = KNNImputer(n_neighbors=5, weights='uniform', metric='nan_euclidean')
+    kepler_filled = pd.DataFrame(imputer.fit_transform(kepler2), columns=kepler2.columns)
+
+    print(kepler_filled.isnull().sum())
+
+    name_col = kepler['kepoi_name']
+    disposition_col = kepler['koi_disposition']
+    kepler_filled = kepler_filled.join(name_col)
+    kepler_filled = kepler_filled.join(disposition_col)
+
+    kepler_filled.to_csv('./dataset/pp_dataset/kepler_filled.csv')
+
     return kepler
