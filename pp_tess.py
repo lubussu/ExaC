@@ -9,10 +9,11 @@ def pre_process():
     tess = tess.dropna(subset=['tfopwg_disp'])
     tess = tess.drop(tess[tess.tfopwg_disp == 'FA'].index)
     tess['tfopwg_disp'].replace(
-        {"FP": "FALSE POSITIVE", "KP": "CONFIRMED", "CP": "CONFIRMED", "PC": "CANDIDATE", "APC": "CANDIDATE"},
+        {"FP": -1, "KP": 1, "CP": 1, "PC": 0, "APC": 0},
         inplace=True)
 
     print("tess prev attributes:" + str(tess.columns.size))
+    print("tess prev rows: " + str(len(tess)))
 
     tess.drop(
         columns=['rowid', 'toipfx', 'tid', 'ctoi_alias', 'pl_pnum', 'rastr', 'decstr',
@@ -31,10 +32,9 @@ def pre_process():
     tess = tess[tess.columns.drop(list(tess.filter(regex='err')))]  # remove columns that contains err in attribute name
     tess = tess[tess.columns.drop(list(tess.filter(regex='lim')))]  # remove columns that contains lim in attribute name
 
-    print("tess next attributes:" + str(tess.columns.size))
-
     thresh = tess.columns.size * .8
     tess.dropna(thresh=thresh, axis=0, inplace=True) #remove columns with less than 70% of not nan values
 
+    print("tess next attributes:" + str(tess.columns.size))
     tess.to_csv('./dataset/pp_dataset/tess.csv')
     return tess

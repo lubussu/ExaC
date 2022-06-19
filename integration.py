@@ -44,8 +44,9 @@ def data_integration():
     kepler = kepler[kepler.columns.intersection(common_cols)]
 
     dataframe = pd.concat([k2, kepler], ignore_index=True)
+    dataframe.drop(dataframe.index[dataframe['disposition'] == 0], inplace=True)
     print("Columns of merged dataset: " + str(dataframe.columns.size))
-    print(dataframe)
+    print(dataframe.dtypes)
     dataframe.to_csv('./dataset/pp_dataset/k2-kepler_dataset.csv')
 
     common_cols = list(set.intersection(set(k2), set(kepler), set(tess)))
@@ -54,6 +55,7 @@ def data_integration():
     tess = tess[tess.columns.intersection(common_cols)]
 
     dataframe = pd.concat([k2, kepler, tess], ignore_index=True)
+    dataframe.drop(dataframe.index[dataframe['disposition'] == 0], inplace=True)
     print("Columns of merged dataset: " + str(dataframe.columns.size))
-    print(dataframe)
+    #print(dataframe)
     dataframe.to_csv('./dataset/pp_dataset/all_dataset.csv')
