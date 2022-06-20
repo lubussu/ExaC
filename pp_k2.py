@@ -1,3 +1,5 @@
+import math
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,8 +11,6 @@ def pre_process():
     k2 = pd.read_csv('./dataset/K2 Objects of Interests.csv', on_bad_lines='skip')
     k2 = k2.dropna(subset=['disposition'])
 
-    print("k2 prev attributes: " + str(k2.columns.size))
-    print("k2 prev rows: " + str(len(k2)))
     k2.drop(
         columns=['rowid', 'hostname', 'epic_hostname', 'tic_id', 'gaia_id', 'default_flag', 'disp_refname',
                  'discoverymethod', 'disc_year', 'disc_refname', 'disc_pubdate', 'disc_locale', 'disc_facility',
@@ -18,10 +18,6 @@ def pre_process():
                  'disc_instrument', 'soltype', 'pl_controv_flag', 'pl_refname', 'pl_tsystemref', 'st_refname',
                  'sy_refname', 'rowupdate', 'pl_pubdate', 'releasedate', 'pl_nnotes', 'st_nphot', 'st_nrvc',
                  'st_nspec', 'pl_letter', 'k2_name', 'rastr', 'decstr'],
-        inplace=True)
-
-    k2['disposition'].replace(
-        {"FALSE POSITIVE": -1, "CONFIRMED": 1, "CANDIDATE": 0},
         inplace=True)
 
     thresh = len(k2) * .5
@@ -36,29 +32,27 @@ def pre_process():
     k2 = k2[k2.columns.drop(list(k2.filter(regex='err')))] #remove columns that contains err in attribute name
     k2 = k2[k2.columns.drop(list(k2.filter(regex='lim')))] #remove columns that contains lim in attribute name
 
-
-
     thresh = k2.columns.size * .8
     k2.dropna(thresh=thresh, axis=0, inplace=True) #remove columns with less than 70% of not nan values
 
-    k2.to_csv('./dataset/pp_dataset/k2_nocorr.csv')
+    #replace dispostion values in numeric values
+    k2['disposition'].replace(
+        {"FALSE POSITIVE": -1, "CONFIRMED": 1, "CANDIDATE": 0},
+        inplace=True)
+
+    #handling missing values:
+    k22 = k2.drop(columns=['pl_name', 'pl_ntranspec;;;;'])
+
+    k = math.trunc(math.sqrt(len(k2)))
+    imputer = KNNImputer(n_neighbors=k, weights='uniform', metric='nan_euclidean')
+    k2_filled = pd.DataFrame(imputer.fit_transform(k22), columns=k22.columns)
+
+    k2_filled.insert(0, 'pl_name', k2['pl_name'].values)
+    k2_filled.to_csv('./dataset/pp_dataset/k2_filled.csv')
 
     #remove attributes with a value of corr_m > 0.95 (see on the visual correlation matrix)
-    k2.drop(columns=['tran_flag', 'sy_gaiamag', 'sy_jmag', 'sy_hmag', 'sy_kmag',
-                     'sy_tmag'], inplace=True)
-
-    print("k2 next attributes: " + str(k2.columns.size))
-
-    # k22 = k2.drop(columns=['pl_name', 'disposition'])
+    # k2_filled.drop(columns=['tran_flag', 'sy_gaiamag', 'sy_jmag', 'sy_hmag', 'sy_kmag',
+    #                  'sy_tmag'], inplace=True)
     #
-    # imputer = KNNImputer(n_neighbors=5, weights='uniform', metric='nan_euclidean')
-    # k2_filled = pd.DataFrame(imputer.fit_transform(k22), columns=k22.columns)
-    #
-    # print(k2_filled.isnull().sum())
-    #
-    # extracted_col = k2['pl_name', 'disposition']
-    # k2_filled = k2_filled.join(extracted_col)
-    # 
-    # k2.to_csv('./dataset/pp_dataset/k2.csv')
-    # k2_filled.to_csv('./dataset/pp_dataset/k2_filled.csv')
-    return k2
+    # k2_filled.to_csv('./dataset/pp_dataset/k2.csv')
+    return k2_filled
