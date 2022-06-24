@@ -34,7 +34,7 @@ def pre_process():
 
     # replace dispostion values in numeric values
     tess['tfopwg_disp'].replace(
-        {"FP": -1, "KP": 1, "CP": 1, "PC": 0, "APC": 0},
+        {"FP": 0, "KP": 1, "CP": 1, "PC": 2, "APC": 2},
         inplace=True)
 
     # handling missing values:

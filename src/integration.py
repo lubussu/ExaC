@@ -39,11 +39,20 @@ def data_integration():
 
     tess.rename(columns={"toi": "pl_name", "tfopwg_disp": "disposition"}, inplace=True)
 
+    kepler.drop(kepler.index[kepler['disposition'] == 2], inplace=True)
+    kepler.to_csv('../dataset/final_dataset/kepler.csv')
+
+    k2.drop(kepler.index[kepler['disposition'] == 2], inplace=True)
+    k2.to_csv('../dataset/final_dataset/k2.csv')
+
+    tess.drop(kepler.index[kepler['disposition'] == 2], inplace=True)
+    tess.to_csv('../dataset/final_dataset/tess.csv')
+
     common_cols = list(set.intersection(set(k2), set(kepler)))
     k2 = k2[k2.columns.intersection(common_cols)]
     kepler = kepler[kepler.columns.intersection(common_cols)]
     dataframe = pd.concat([k2, kepler], ignore_index=True)
-    dataframe.drop(dataframe.index[dataframe['disposition'] == 0], inplace=True)
+    dataframe.drop(dataframe.index[dataframe['disposition'] == 2], inplace=True)
     dataframe.to_csv('../dataset/final_dataset/k2-kepler.csv')
 
     common_cols = list(set.intersection(set(k2), set(kepler), set(tess)))
@@ -51,15 +60,6 @@ def data_integration():
     kepler = kepler[kepler.columns.intersection(common_cols)]
     tess = tess[tess.columns.intersection(common_cols)]
     dataframe = pd.concat([k2, kepler, tess], ignore_index=True)
-    dataframe.drop(dataframe.index[dataframe['disposition'] == 0], inplace=True)
+    dataframe.drop(dataframe.index[dataframe['disposition'] == 2], inplace=True)
     dataframe.to_csv('../dataset/final_dataset/all.csv')
-
-    kepler.drop(kepler.index[kepler['disposition'] == 0], inplace=True)
-    kepler.to_csv('../dataset/final_dataset/kepler.csv')
-
-    k2.drop(kepler.index[kepler['disposition'] == 0], inplace=True)
-    k2.to_csv('../dataset/final_dataset/k2.csv')
-
-    tess.drop(kepler.index[kepler['disposition'] == 0], inplace=True)
-    tess.to_csv('../dataset/final_dataset/tess.csv')
 

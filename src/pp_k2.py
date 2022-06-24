@@ -37,7 +37,7 @@ def pre_process():
 
     #replace dispostion values in numeric values
     k2['disposition'].replace(
-        {"FALSE POSITIVE": -1, "CONFIRMED": 1, "CANDIDATE": 0},
+        {"FALSE POSITIVE": 0, "CONFIRMED": 1, "CANDIDATE": 2},
         inplace=True)
 
     #handling missing values:
@@ -50,9 +50,9 @@ def pre_process():
     k2_filled.insert(0, 'pl_name', k2['pl_name'].values)
     k2_filled.to_csv('../dataset/pp_dataset/k2_filled.csv')
 
-    #remove attributes with a value of corr_m > 0.95 (see on the visual correlation matrix)
-    # k2_filled.drop(columns=['tran_flag', 'sy_gaiamag', 'sy_jmag', 'sy_hmag', 'sy_kmag',
-    #                  'sy_tmag'], inplace=True)
-    #
-    # k2_filled.to_csv('../dataset/pp_dataset/k2.csv')
+    # remove attributes with a value of corr_m > 0.95 (see on the visual correlation matrix)
+    k2_filled.drop(columns=['tran_flag', 'sy_gaiamag', 'sy_jmag', 'sy_hmag', 'sy_kmag',
+                     'sy_tmag'], inplace=True)
+
+    k2_filled.to_csv('../dataset/pp_dataset/k2.csv')
     return k2_filled

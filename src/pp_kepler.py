@@ -35,7 +35,7 @@ def pre_process():
 
     # replace dispostion values in numeric values
     kepler['koi_disposition'].replace(
-        {"FALSE POSITIVE": -1, "CONFIRMED": 1, "CANDIDATE": 0},
+        {"FALSE POSITIVE": 0, "CONFIRMED": 1, "CANDIDATE": 2},
         inplace=True)
 
     # handling missing values:
@@ -49,8 +49,8 @@ def pre_process():
     kepler_filled.to_csv('../dataset/pp_dataset/kepler_filled.csv')
 
     # remove attributes with a value of corr_m > 0.95 (see on the visual correlation matrix)
-    # kepler.drop(columns=['koi_fwm_sra', 'koi_fwm_sdec', 'koi_gmag', 'koi_rmag', 'koi_imag', 'koi_zmag', 'koi_jmag',
-    #                      'koi_hmag', 'koi_kmag', 'koi_ldm_coeff2'], inplace=True)
-    #
-    # kepler_filled.to_csv('../dataset/pp_dataset/kepler.csv')
+    kepler.drop(columns=['koi_fwm_sra', 'koi_fwm_sdec', 'koi_gmag', 'koi_rmag', 'koi_imag', 'koi_zmag', 'koi_jmag',
+                         'koi_hmag', 'koi_kmag', 'koi_ldm_coeff2'], inplace=True)
+
+    kepler_filled.to_csv('../dataset/pp_dataset/kepler.csv')
     return kepler_filled
