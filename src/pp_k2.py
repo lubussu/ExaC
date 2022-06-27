@@ -12,7 +12,7 @@ def pre_process():
     k2 = k2.dropna(subset=['disposition'])
 
     k2.drop(
-        columns=['rowid', 'hostname', 'epic_hostname', 'tic_id', 'gaia_id', 'default_flag', 'disp_refname',
+        columns=['rowid', 'hostname', 'gaia_id', 'default_flag', 'disp_refname',
                  'discoverymethod', 'disc_year', 'disc_refname', 'disc_pubdate', 'disc_locale', 'disc_facility',
                  'disc_telescope',
                  'disc_instrument', 'soltype', 'pl_controv_flag', 'pl_refname', 'pl_tsystemref', 'st_refname',
