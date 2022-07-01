@@ -14,89 +14,92 @@ from astroquery.mast import Observations
 import pandas as pd
 import os
 
-kepler = pd.read_csv('../dataset/Kepler Objects of Interests.csv', on_bad_lines='skip')
-
-kepler[['lc_amplitude', 'lc_slope', 'lc_max', 'lc_mean', 'lc_median', 'lc_meanAbsDev', 'lc_min',
-        'lc_q1', 'lc_q31', 'lc_resBFR', 'lc_skew', 'lc_kurtosis', 'lc_std']] = pd.DataFrame([[np.nan] * 13], index=kepler.index)
-
-path = "A:/lightcurves/mastDownload/Kepler"
+path = "A:/lightcurves/mastDownload/dataframe"
 isFile = os.path.isfile(path)
 if not isFile:
-    path = "/Users/luanabussu/Kepler"
+    path = "/Users/luanabussu/dataframe"
 
-x = 0
 
-for root, dirs, files in os.walk(path):
-    for file in files:
-        f_path = os.path.join(root, file)
-        if file.endswith(".fits"):
-            with fits.open(f_path, mode="readonly") as hdulist:
-                header1 = hdulist[1].header
-                binaryext = hdulist[1].data
-                # Read in the "BJDREF" which is the time offset of the time array.
-                bjdrefi = hdulist[1].header['BJDREFI']
-                bjdreff = hdulist[1].header['BJDREFF']
+def extract_features(dataframe, col_name):
+    dataframe[['lc_amplitude', 'lc_slope', 'lc_max', 'lc_mean', 'lc_median', 'lc_meanAbsDev', 'lc_min',
+               'lc_q1', 'lc_q31', 'lc_resBFR', 'lc_skew', 'lc_kurtosis', 'lc_std']] = pd.DataFrame([[np.nan] * 13],
+                                                                                                   index=dataframe.index)
 
-                # Read in the columns of data.
-                times = hdulist[1].data['TIME']
-                sap_fluxes = hdulist[1].data['SAP_FLUX']
-                pdcsap_fluxes = hdulist[1].data['PDCSAP_FLUX']
+    x = 0
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            f_path = os.path.join(root, file)
+            if file.endswith(".fits"):
+                with fits.open(f_path, mode="readonly") as hdulist:
+                    header1 = hdulist[1].header
+                    binaryext = hdulist[1].data
+                    # Read in the "BJDREF" which is the time offset of the time array.
+                    bjdrefi = hdulist[1].header['BJDREFI']
+                    bjdreff = hdulist[1].header['BJDREFF']
 
-                times = pd.Series(times).interpolate()
+                    # Read in the columns of data.
+                    times = hdulist[1].data['TIME']
+                    sap_fluxes = hdulist[1].data['SAP_FLUX']
+                    pdcsap_fluxes = hdulist[1].data['PDCSAP_FLUX']
 
-                lc = pd.Series(pdcsap_fluxes)
-                a = lc.interpolate()
+                    times = pd.Series(times).interpolate()
 
-                k_id = file.replace("kplr000", "").replace("kplr00", "").replace("kplr0", "")
-                k_id = k_id.split("-")[0]
+                    lc = pd.Series(pdcsap_fluxes)
+                    a = lc.interpolate()
 
-                lmax = np.max(a)
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_max'] = lmax
+                    if col_name == 'kepid':  # kepler
+                        col_value = file.replace("kplr000", "").replace("kplr00", "").replace("kplr0", "")
+                        col_value = col_value.split("-")[0]
+                    if col_name == '':  # k2
+                        col_value = ""
 
-                lmin = np.min(a)
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_lmin'] = lmin
+                    lmax = np.max(a)
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_max'] = lmax
 
-                mean = np.mean(a)
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_mean'] = mean
+                    lmin = np.min(a)
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_lmin'] = lmin
 
-                q1 = np.quantile(a, 0.25)
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_q1'] = q1
+                    mean = np.mean(a)
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_mean'] = mean
 
-                median = np.quantile(a, 0.5)
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_median'] = median
+                    q1 = np.quantile(a, 0.25)
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_q1'] = q1
 
-                q3 = np.quantile(a, 0.75)
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_q3'] = q3
+                    median = np.quantile(a, 0.5)
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_median'] = median
 
-                std = np.std(a)
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_std'] = std
+                    q3 = np.quantile(a, 0.75)
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_q3'] = q3
 
-                amp = (lmax - lmin) / 2
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_amplitude'] = amp
+                    std = np.std(a)
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_std'] = std
 
-                p = np.polyfit(times, a, deg=1)
-                slope = p[0]
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_slope'] = slope
+                    amp = (lmax - lmin) / 2
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_amplitude'] = amp
 
-                mad_temp = a - median
-                meanAbsDev = np.mean(mad_temp)
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_meanAbsDev'] = meanAbsDev
+                    p = np.polyfit(times, a, deg=1)
+                    slope = p[0]
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_slope'] = slope
 
-                q31 = q3 - q1
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_q31'] = q31
+                    mad_temp = a - median
+                    meanAbsDev = np.mean(mad_temp)
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_meanAbsDev'] = meanAbsDev
 
-                resBFR = sum(x < mean for x in a) / sum(x > mean for x in a)
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_resBFR'] = resBFR
+                    q31 = q3 - q1
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_q31'] = q31
 
-                skew = scipy.stats.skew(a)
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_skew'] = skew
+                    resBFR = sum(x < mean for x in a) / sum(x > mean for x in a)
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_resBFR'] = resBFR
 
-                kurtosis = scipy.stats.moment(a, moment=4)
-                kepler.loc[kepler['kepid'] == int(k_id), 'lc_kurtosis'] = kurtosis
+                    skew = scipy.stats.skew(a)
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_skew'] = skew
 
-            x = x + 1
+                    kurtosis = scipy.stats.moment(a, moment=4)
+                    dataframe.loc[dataframe[col_name] == int(col_value), 'lc_kurtosis'] = kurtosis
 
-print(kepler)
+                x = x + 1
+
+    return dataframe
 
 # # # Convert the time array to full BJD by adding the offset back in.
 # bjds = times + bjdrefi + bjdreff
@@ -107,10 +110,8 @@ print(kepler)
 # plt.plot(bjds, sap_fluxes, '-k', label='SAP Flux')
 # plt.plot(bjds, pdcsap_fluxes, '-b', label='PDCSAP Flux')
 #
-# plt.title('Kepler Light Curve')
+# plt.title('dataframe Light Curve')
 # plt.legend()
 # plt.xlabel('Time (days)')
 # plt.ylabel('Flux (electrons/second)')
 # plt.show()
-
-

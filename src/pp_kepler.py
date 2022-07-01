@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import lightcurves_features as lcf
 from sklearn.impute import KNNImputer
 
 
@@ -39,6 +40,9 @@ def pre_process():
     kepler['koi_disposition'].replace(
         {"FALSE POSITIVE": 0, "CONFIRMED": 1, "CANDIDATE": 2},
         inplace=True)
+
+    # feature extraction from lightcurves time series
+    kepler = lcf.extract_features(kepler, 'tic_id')
 
     # handling missing values:
     kepler2 = kepler.drop(columns=['kepoi_name'])
