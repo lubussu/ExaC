@@ -14,80 +14,89 @@ from astroquery.mast import Observations
 import pandas as pd
 import os
 
-filename = "A:/lightcurves/mastDownload/Kepler/kplr000757450_lc_Q011111111111111111/kplr000757450-2009166043257_llc.fits"
+kepler = pd.read_csv('../dataset/Kepler Objects of Interests.csv', on_bad_lines='skip')
 
-isFile = os.path.isfile(filename)
+kepler[['lc_amplitude', 'lc_slope', 'lc_max', 'lc_mean', 'lc_median', 'lc_meanAbsDev', 'lc_min',
+        'lc_q1', 'lc_q31', 'lc_resBFR', 'lc_skew', 'lc_kurtosis', 'lc_std']] = pd.DataFrame([[np.nan] * 13], index=kepler.index)
 
+path = "A:/lightcurves/mastDownload/Kepler"
+isFile = os.path.isfile(path)
 if not isFile:
-    filename = "/Users/luanabussu/Kepler/kplr000757450_lc_Q011111111111111111/kplr000757450-2009166043257_llc.fits"
+    path = "/Users/luanabussu/Kepler"
 
-fits.info(filename)
+x = 0
 
-with fits.open(filename, mode="readonly") as hdulist:
-    header1 = hdulist[1].header
-    binaryext = hdulist[1].data
-    # Read in the "BJDREF" which is the time offset of the time array.
-    bjdrefi = hdulist[1].header['BJDREFI']
-    bjdreff = hdulist[1].header['BJDREFF']
+for root, dirs, files in os.walk(path):
+    for file in files:
+        f_path = os.path.join(root, file)
+        if file.endswith(".fits"):
+            with fits.open(f_path, mode="readonly") as hdulist:
+                header1 = hdulist[1].header
+                binaryext = hdulist[1].data
+                # Read in the "BJDREF" which is the time offset of the time array.
+                bjdrefi = hdulist[1].header['BJDREFI']
+                bjdreff = hdulist[1].header['BJDREFF']
 
-    # Read in the columns of data.
-    times = hdulist[1].data['TIME']
-    sap_fluxes = hdulist[1].data['SAP_FLUX']
-    pdcsap_fluxes = hdulist[1].data['PDCSAP_FLUX']
+                # Read in the columns of data.
+                times = hdulist[1].data['TIME']
+                sap_fluxes = hdulist[1].data['SAP_FLUX']
+                pdcsap_fluxes = hdulist[1].data['PDCSAP_FLUX']
 
-    lc = pd.Series(pdcsap_fluxes)
-    a = lc.interpolate()
+                times = pd.Series(times).interpolate()
 
-    # print(len(times))
-    # print(len(sap_fluxes))
-    # print(len(pdcsap_fluxes))
-    print(np.isnan(times).sum())
-    print(np.isnan(a).sum())
+                lc = pd.Series(pdcsap_fluxes)
+                a = lc.interpolate()
 
-    lmax = np.max(a)
+                k_id = file.replace("kplr000", "").replace("kplr00", "").replace("kplr0", "")
+                k_id = k_id.split("-")[0]
 
-    lmin = np.min(a)
+                lmax = np.max(a)
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_max'] = lmax
 
-    mean = np.mean(a)
+                lmin = np.min(a)
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_lmin'] = lmin
 
-    q1 = np.quantile(a, 0.25)
+                mean = np.mean(a)
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_mean'] = mean
 
-    median = np.quantile(a, 0.5)
+                q1 = np.quantile(a, 0.25)
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_q1'] = q1
 
-    q3 = np.quantile(a, 0.75)
+                median = np.quantile(a, 0.5)
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_median'] = median
 
-    std = np.std(a)
+                q3 = np.quantile(a, 0.75)
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_q3'] = q3
 
-    amp = (lmax - lmin)/2
+                std = np.std(a)
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_std'] = std
 
-    p = np.polyfit(times, a, deg=1)
-    slope = p[0]
+                amp = (lmax - lmin) / 2
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_amplitude'] = amp
 
-    mad_temp = a - median
-    meanAbsDev = np.mean(mad_temp)
+                p = np.polyfit(times, a, deg=1)
+                slope = p[0]
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_slope'] = slope
 
-    q31 = q3 - q1
+                mad_temp = a - median
+                meanAbsDev = np.mean(mad_temp)
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_meanAbsDev'] = meanAbsDev
 
-    resBFR = sum(x < mean for x in a)/sum(x > mean for x in a)
+                q31 = q3 - q1
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_q31'] = q31
 
-    skew = scipy.stats.skew(a)
+                resBFR = sum(x < mean for x in a) / sum(x > mean for x in a)
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_resBFR'] = resBFR
 
-    kurtosis = scipy.stats.moment(a, moment=4)
+                skew = scipy.stats.skew(a)
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_skew'] = skew
 
+                kurtosis = scipy.stats.moment(a, moment=4)
+                kepler.loc[kepler['kepid'] == int(k_id), 'lc_kurtosis'] = kurtosis
 
-# print(repr(header1[0:24]))  # repr() prints the info into neat columns
-# binarytable = Table(binaryext)
-# print(binarytable.info)
+            x = x + 1
 
-# x = 0
-#
-# for root, dirs, files in os.walk("A:/lightcurves"):
-#     for file in files:
-#         if file.endswith(".fits"):
-#             print(file)
-#             x = x + 1
-#
-# print(x)
+print(kepler)
 
 # # # Convert the time array to full BJD by adding the offset back in.
 # bjds = times + bjdrefi + bjdreff
