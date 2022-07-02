@@ -42,7 +42,7 @@ def pre_process():
         inplace=True)
 
     # feature extraction from lightcurves time series
-    k2 = lcf.extract_features(k2, 'tic_id')
+    # k2 = lcf.extract_features(k2, 'tic_id')
 
     #handling missing values:
     k22 = k2.drop(columns=['pl_name', 'pl_ntranspec;;;;'])

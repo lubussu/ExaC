@@ -7,4 +7,4 @@ import pp_k2
 import pp_kepler
 import integration as di
 
-# di.data_integration()
+di.data_integration()

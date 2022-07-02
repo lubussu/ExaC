@@ -42,7 +42,7 @@ def pre_process():
         inplace=True)
 
     # feature extraction from lightcurves time series
-    kepler = lcf.extract_features(kepler, 'tic_id')
+    #kepler = lcf.extract_features(kepler, 'kepid')
 
     # handling missing values:
     kepler2 = kepler.drop(columns=['kepoi_name'])

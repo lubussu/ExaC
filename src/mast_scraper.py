@@ -14,7 +14,7 @@ import pandas as pd
 
 k2 = pd.read_csv('../dataset/pp_dataset/k2ticids.csv', on_bad_lines='skip')
 
-ids = k2['tic_id']
+ids = k2['tic_id'].drop_duplicates()
 
 pathk2 = "A:/lightcurves/K2"
 pathkepler = "A:/lightcurves/Kepler"

@@ -9,18 +9,28 @@ from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
+from imblearn.over_sampling import SMOTE
+from collections import Counter
 
-path = "../dataset/final_dataset/all.csv"
+path = "../dataset/final_dataset/k2-kepler.csv"
 
 dataset = pd.read_csv(path)
 dataset.drop(columns=["pl_name"], inplace=True)
 
-X, y = dataset, dataset.disposition.to_numpy()
+X, y = dataset, dataset.disposition.values
 
 X.drop(columns=['disposition'], inplace=True)
-
+X = X.values
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+oversample = SMOTE()
+counter = Counter(y_train)
+print(counter)
+
+X_train, y_train = oversample.fit_resample(X_train, y_train)
+counter = Counter(y_train)
+print(counter)
 
 clf = RandomForestClassifier(random_state=5)
 
@@ -32,7 +42,3 @@ print("********************************************************")
 clf.fit(X_train, y_train)
 scores2 = clf.score(X_test, y_test)
 print(scores2)
-
-#
-# dataset = load_dataset(path)
-# train_set, test_set = train_test_split(dataset, train_size=0.7, shuffle=True)

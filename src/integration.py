@@ -42,10 +42,10 @@ def data_integration():
     kepler.drop(kepler.index[kepler['disposition'] == 2], inplace=True)
     kepler.to_csv('../dataset/final_dataset/kepler.csv')
 
-    k2.drop(kepler.index[kepler['disposition'] == 2], inplace=True)
+    k2.drop(k2.index[k2['disposition'] == 2], inplace=True)
     k2.to_csv('../dataset/final_dataset/k2.csv')
 
-    tess.drop(kepler.index[kepler['disposition'] == 2], inplace=True)
+    tess.drop(tess.index[tess['disposition'] == 2], inplace=True)
     tess.to_csv('../dataset/final_dataset/tess.csv')
 
     common_cols = list(set.intersection(set(k2), set(kepler)))

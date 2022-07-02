@@ -14,32 +14,26 @@ from astroquery.mast import Observations
 import pandas as pd
 import os
 
-path = "A:/lightcurves/mastDownload/dataframe"
+path = "A:/lightcurves/mastDownload/Kepler"
 isFile = os.path.isfile(path)
 if not isFile:
-    path = "/Users/luanabussu/dataframe"
+    path = "/Users/luanabussu/Kepler"
 
 
 def extract_features(dataframe, col_name):
     dataframe[['lc_amplitude', 'lc_slope', 'lc_max', 'lc_mean', 'lc_median', 'lc_meanAbsDev', 'lc_min',
                'lc_q1', 'lc_q31', 'lc_resBFR', 'lc_skew', 'lc_kurtosis', 'lc_std']] = pd.DataFrame([[np.nan] * 13],
                                                                                                    index=dataframe.index)
-
     x = 0
+    print(path)
     for root, dirs, files in os.walk(path):
         for file in files:
             f_path = os.path.join(root, file)
             if file.endswith(".fits"):
                 with fits.open(f_path, mode="readonly") as hdulist:
-                    header1 = hdulist[1].header
-                    binaryext = hdulist[1].data
-                    # Read in the "BJDREF" which is the time offset of the time array.
-                    bjdrefi = hdulist[1].header['BJDREFI']
-                    bjdreff = hdulist[1].header['BJDREFF']
 
                     # Read in the columns of data.
                     times = hdulist[1].data['TIME']
-                    sap_fluxes = hdulist[1].data['SAP_FLUX']
                     pdcsap_fluxes = hdulist[1].data['PDCSAP_FLUX']
 
                     times = pd.Series(times).interpolate()
@@ -47,11 +41,7 @@ def extract_features(dataframe, col_name):
                     lc = pd.Series(pdcsap_fluxes)
                     a = lc.interpolate()
 
-                    if col_name == 'kepid':  # kepler
-                        col_value = file.replace("kplr000", "").replace("kplr00", "").replace("kplr0", "")
-                        col_value = col_value.split("-")[0]
-                    if col_name == '':  # k2
-                        col_value = ""
+                    col_value = file
 
                     lmax = np.max(a)
                     dataframe.loc[dataframe[col_name] == int(col_value), 'lc_max'] = lmax
