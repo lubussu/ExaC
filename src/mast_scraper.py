@@ -12,45 +12,44 @@ import lightkurve as lk
 from astroquery.mast import Observations
 import pandas as pd
 
-k2 = pd.read_csv('../dataset/pp_dataset/k2ticids.csv', on_bad_lines='skip')
+k2 = pd.read_csv('../dataset/pp_dataset/keplerids.csv', on_bad_lines='skip')
 
-ids = k2['tic_id'].drop_duplicates()
+ids = k2['kepid'].drop_duplicates()
 
 pathk2 = "A:/lightcurves/K2"
 pathkepler = "A:/lightcurves/Kepler"
 
-# # for kepler scraping
-# ids = ids.map(int)
-# ids = ids.map(str)
+# for kepler scraping
+ids = ids.map(int)
+ids = ids.map(str)
 
 for x in ids:
-    # # kepler ids normalization for kepler scraping
-    # if len(x) == 6:
-    #     target = "kplr000" + x
-    #     print(target)
-    # if len(x) == 7:
-    #     target = "kplr00" + x
-    #     print(target)
-    # if len(x) == 8:
-    #     target = "kplr0" + x
-    #     print(target)
+    # kepler ids normalization for kepler scraping
+    if len(x) == 6:
+        target = "kplr000" + x
+        print(target)
+    if len(x) == 7:
+        target = "kplr00" + x
+        print(target)
+    if len(x) == 8:
+        target = "kplr0" + x
+        print(target)
 
     print(x)
 
     # # K2 ids scraping with lightkurve package for K2 scraping
-    search_result = lk.search_lightcurve(x, author='K2')
+    # search_result = lk.search_lightcurve(x, author='K2')
+    #
+    # if not search_result:
+    #     continue
 
-    if not search_result:
-        continue
-
-    # # for Kepler
-    # target = x
-    # for K2
-    target = search_result[0]
+    # # for K2
+    # target = search_result[0]
 
     # target depends on scraping type
     # general scraping of light curves from MAST archive
-    Obs = Observations.query_criteria(target_name=target.table['target_name'], obs_collection='K2')
+    # ATTENTION: change the obs_collection based on the mission
+    Obs = Observations.query_criteria(target_name=target, obs_collection='Kepler')
     print("******************")
 
     Prods = Observations.get_product_list(Obs[0])
@@ -60,9 +59,11 @@ for x in ids:
                                             mrp_only=False)
     print("******************")
 
-    print(yourProd)
+    print(yourProd[0])
 
     # changing path
     download = Observations.download_products(yourProd[0], mrp_only=False, cache=False, download_dir='A:/lightcurves')
     curr_path = download[0].table['Local Path'].value
-    os.rename(curr_path[0], os.path.join(pathk2, x + '.fits'))
+
+    # change the path based on the mission
+    os.rename(curr_path[0], os.path.join(pathkepler, x + '.fits'))

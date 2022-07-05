@@ -15,6 +15,11 @@ from collections import Counter
 path = "../dataset/final_dataset/k2-kepler.csv"
 
 dataset = pd.read_csv(path)
+
+dataset.drop(dataset.columns[0], axis=1, inplace=True)
+
+print(dataset.to_markdown())
+
 dataset.drop(columns=["pl_name"], inplace=True)
 
 X, y = dataset, dataset.disposition.values
@@ -24,10 +29,11 @@ X = X.values
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-oversample = SMOTE()
+
 counter = Counter(y_train)
 print(counter)
 
+oversample = SMOTE()
 X_train, y_train = oversample.fit_resample(X_train, y_train)
 counter = Counter(y_train)
 print(counter)
