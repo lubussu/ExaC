@@ -13,10 +13,8 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import mean_squared_error
 from imblearn.over_sampling import SMOTE
 from collections import Counter
+from sklearn.naive_bayes import GaussianNB, MultinomialNB, ComplementNB, BernoulliNB, CategoricalNB
 
-path = "../dataset/final_dataset/k2-kepler.csv"
-
-dataset = pd.read_csv(path)
 
 def exo_random_forest():
     clf = RandomForestClassifier(random_state=5)
@@ -99,7 +97,6 @@ path = "../dataset/final_dataset/k2-kepler.csv"
 dataset = pd.read_csv(path)
 dataset.drop(dataset.columns[0], axis=1, inplace=True)
 
-print(dataset.to_markdown())
 
 dataset.drop(columns=["pl_name"], inplace=True)
 
