@@ -15,9 +15,6 @@ import pandas as pd
 import os
 
 
-
-
-
 def extract_features(dataframe, col_name):
     dataframe[['lc_amplitude', 'lc_slope', 'lc_max', 'lc_mean', 'lc_median', 'lc_meanAbsDev', 'lc_min',
                'lc_q1', 'lc_q3', 'lc_q31', 'lc_resBFR', 'lc_skew', 'lc_kurtosis', 'lc_std']] = pd.DataFrame(
