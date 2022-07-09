@@ -65,5 +65,4 @@ def pre_process():
                             'sy_tmag'], inplace=True)
 
     k2_filled.to_csv('../dataset/pp_dataset/k2.csv')
-    print(k2_filled)
     return k2_filled

@@ -29,11 +29,10 @@ def extract_features(dataframe, col_name):
     isFile = os.path.isfile(path)
     if not isFile:
         if col_name == 'kepid':
-            path = "/Users/luanabussu/Kepler"
+            path = "/Users/luanabussu/lightcurves/Kepler"
         if col_name == 'tic_id':
-            path = "/Users/luanabussu/K2"
+            path = "/Users/luanabussu/lightcurves/K2"
 
-    print(path)
     for root, dirs, files in os.walk(path):
         for file in files:
             f_path = os.path.join(root, file)

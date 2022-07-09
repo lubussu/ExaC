@@ -53,7 +53,6 @@ def data_integration():
     kepler = kepler[kepler.columns.intersection(common_cols)]
     dataframe = pd.concat([k2, kepler], ignore_index=True)
     dataframe.drop(dataframe.index[dataframe['disposition'] == 2], inplace=True)
-    print(dataframe)
     dataframe.to_csv('../dataset/final_dataset/k2-kepler.csv')
 
     common_cols = list(set.intersection(set(k2), set(kepler), set(tess)))
@@ -63,4 +62,3 @@ def data_integration():
     dataframe = pd.concat([k2, kepler, tess], ignore_index=True)
     dataframe.drop(dataframe.index[dataframe['disposition'] == 2], inplace=True)
     dataframe.to_csv('../dataset/final_dataset/all.csv')
-
