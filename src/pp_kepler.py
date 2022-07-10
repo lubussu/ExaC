@@ -64,5 +64,4 @@ def pre_process():
                          'koi_hmag', 'koi_kmag', 'koi_ldm_coeff2'], inplace=True)
 
     kepler_filled.to_csv('../dataset/pp_dataset/kepler.csv')
-    print(kepler_filled)
     return kepler_filled
