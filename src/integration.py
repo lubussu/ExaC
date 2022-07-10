@@ -16,7 +16,6 @@ def data_integration():
                            "koi_disposition": "disposition",
                            "koi_period": "pl_orbper",
                            "koi_prad": "pl_rade",
-                           "koi_eccen": "pl_orbeccen",
                            "koi_sma": "pl_orbsmax",
                            "koi_srho": "pl_dens",
                            "koi_eccen": "pl_orbeccen",
