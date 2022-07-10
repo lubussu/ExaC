@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import lightcurves_features as lcf
 from sklearn.impute import KNNImputer
 
 
@@ -13,7 +14,7 @@ def pre_process():
     tess = tess.drop(tess[tess.tfopwg_disp == 'FA'].index)
 
     tess.drop(
-        columns=['rowid', 'toipfx', 'tid', 'ctoi_alias', 'pl_pnum', 'rastr', 'decstr',
+        columns=['rowid', 'toipfx', 'ctoi_alias', 'pl_pnum', 'rastr', 'decstr',
                  'toi_created', 'rowupdate'],
         inplace=True)
 
@@ -36,6 +37,9 @@ def pre_process():
     tess['tfopwg_disp'].replace(
         {"FP": 0, "KP": 1, "CP": 1, "PC": 2, "APC": 2},
         inplace=True)
+
+    # feature extraction from lightcurves time series
+    # tess = lcf.extract_features(tess, 'tid')
 
     # handling missing values:
     tess2 = tess.drop(columns=['toi'])

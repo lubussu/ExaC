@@ -1,4 +1,5 @@
 import math
+import time
 from os import truncate
 
 import matplotlib.pyplot as plt
@@ -19,6 +20,7 @@ from collections import Counter
 from sklearn.naive_bayes import GaussianNB, MultinomialNB, ComplementNB, BernoulliNB, CategoricalNB
 from sklearn.tree import DecisionTreeClassifier
 from scipy.stats import ttest_ind
+from termcolor import colored
 
 
 def compute_all(data_in, label_in, balance):
@@ -37,17 +39,9 @@ def compute_all(data_in, label_in, balance):
                'Poly SVM': '',
                'RBF SVM': ''}
 
-    df_results = pd.DataFrame(results, index=['Accuracy', 'Precision', 'Recall', 'F1-score', 'ROC AUC'])
+    df_results = pd.DataFrame(results, index=['Accuracy','Acc Std', 'Precision', 'Recall', 'F1-score', 'ROC AUC', 'Time (s)'])
 
-    ttest_acc = {'KNN': '',
-                 'Gaussian NB': '',
-                 'Bernoulli NB': '',
-                 'Logistic Regression': '',
-                 'Decision Tree': '',
-                 'Random Forest': '',
-                 'Linear SVM': '',
-                 'Poly SVM': '',
-                 'RBF SVM': ''}
+    ttest_acc = results
 
     df_accs = pd.DataFrame(ttest_acc, index=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
@@ -78,19 +72,20 @@ def compute_all(data_in, label_in, balance):
             oversample = SMOTE()
             data, label = oversample.fit_resample(data, label)
 
-        accuracy = cross_val_score(clf, data, label, cv=10)
-        precision = cross_val_score(clf, data, label, cv=10, scoring='precision')
-        recall = cross_val_score(clf, data, label, cv=10, scoring='recall')
-        f1score = cross_val_score(clf, data, label, cv=10, scoring='f1')
-        roc_auc = cross_val_score(clf, data, label, cv=10, scoring='roc_auc')
+        begin = time.time()
+        scores = cross_validate(clf, data, label, cv=10, scoring=('accuracy', 'precision', 'recall', 'f1', 'roc_auc'))
+        end = time.time()
+        ex_time = end - begin
 
-        df_results.loc['Accuracy', s] = '%.3f' % np.mean(accuracy)
-        df_results.loc['Precision', s] = '%.3f' % np.mean(precision)
-        df_results.loc['Recall', s] = '%.3f' % np.mean(recall)
-        df_results.loc['F1-score', s] = '%.3f' % np.mean(f1score)
-        df_results.loc['ROC AUC', s] = '%.3f' % np.mean(roc_auc)
+        df_results.loc['Accuracy', s] = '%.3f' % np.mean(scores['test_accuracy'])
+        df_results.loc['Acc Std', s] = '%.3f' % np.std(scores['test_accuracy'])
+        df_results.loc['Precision', s] = '%.3f' % np.mean(scores['test_precision'])
+        df_results.loc['Recall', s] = '%.3f' % np.mean(scores['test_recall'])
+        df_results.loc['F1-score', s] = '%.3f' % np.mean(scores['test_f1'])
+        df_results.loc['ROC AUC', s] = '%.3f' % np.mean(scores['test_roc_auc'])
+        df_results.loc['Time (s)', s] = '%.3f' % ex_time
 
-        df_accs[s] = accuracy
+        df_accs[s] = scores['test_accuracy']
 
         print(s + ' done!')
 
@@ -99,7 +94,6 @@ def compute_all(data_in, label_in, balance):
     print('\nCV accuracy scores:')
     print(df_accs.to_markdown())
 
-    print('\nT-test matrix (scores/p-values):')
     df_ttest = ttest_matrix(df_accs)
 
     return df_results, df_ttest
@@ -127,8 +121,12 @@ def ttest_matrix(ttest_accs):
                 ttest_results.loc[r, c] = ' '
                 continue
             s, p = ttest_ind(ttest_accs[c], ttest_accs[r])
-            ttest_results.loc[r, c] = '%.3f / %.3f' % (s, p)
+            if 2.26 > s > -2.26:
+                ttest_results.loc[r, c] = '\x1b[1;31;50m%.3f\x1b[0m' % s
+            else:
+                ttest_results.loc[r, c] = '%.3f' % s
 
+    print('\nT-test matrix (t-values):')
     print(ttest_results.to_markdown())
 
     return ttest_results
@@ -152,4 +150,4 @@ X = scaler.fit_transform(X)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-compute_all(X_train, y_train, 0)
+compute_all(X_train, y_train, 1)

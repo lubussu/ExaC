@@ -1,0 +1,7 @@
+-Scegliere il classificatore
+-Provare i parametri del paper
+-Testare le perfomance con il test set
+-Feature importance e creazione grafici
+-Testare i risultati con i candidati
+
+Scraping e integrazione di TESS

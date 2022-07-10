@@ -25,6 +25,8 @@ def extract_features(dataframe, col_name):
         path = "A:/lightcurves/Kepler"
     if col_name == 'tic_id':
         path = "A:/lightcurves/K2"
+    if col_name == 'tid':
+        path = "A:/lightcurves/TESS"
 
     isFile = os.path.isfile(path)
     if not isFile:
@@ -32,6 +34,8 @@ def extract_features(dataframe, col_name):
             path = "/Users/luanabussu/Kepler"
         if col_name == 'tic_id':
             path = "/Users/luanabussu/K2"
+        if col_name == 'tid':
+            path = "/Users/luanabussu/TESS"
 
     print(path)
     for root, dirs, files in os.walk(path):
