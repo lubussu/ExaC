@@ -33,9 +33,9 @@ def extract_features(dataframe, col_name):
         if col_name == 'kepid':
             path = "/Users/luanabussu/lightcurves/Kepler"
         if col_name == 'tic_id':
-            path = "/Users/luanabussu/K2"
+            path = "/Users/luanabussu/lightcurves/K2"
         if col_name == 'tid':
-            path = "/Users/luanabussu/TESS"
+            path = "/Users/luanabussu/lightcurves/TESS"
 
     for root, dirs, files in os.walk(path):
         for file in files:
@@ -57,7 +57,7 @@ def extract_features(dataframe, col_name):
                     dataframe.loc[dataframe[col_name] == col_value, 'lc_max'] = lmax
 
                     lmin = np.min(a)
-                    dataframe.loc[dataframe[col_name] == col_value, 'lc_lmin'] = lmin
+                    dataframe.loc[dataframe[col_name] == col_value, 'lc_min'] = lmin
 
                     mean = np.mean(a)
                     dataframe.loc[dataframe[col_name] == col_value, 'lc_mean'] = mean

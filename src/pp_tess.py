@@ -30,7 +30,7 @@ def pre_process():
     tess = tess[tess.columns.drop(list(tess.filter(regex='err')))]  # remove columns that contains err in attribute name
     tess = tess[tess.columns.drop(list(tess.filter(regex='lim')))]  # remove columns that contains lim in attribute name
 
-    thresh = tess.columns.size * .8
+    thresh = tess.columns.size * .7
     tess.dropna(thresh=thresh, axis=0, inplace=True) #remove columns with less than 70% of not nan values
 
     # replace dispostion values in numeric values
@@ -39,7 +39,7 @@ def pre_process():
         inplace=True)
 
     # feature extraction from lightcurves time series
-    # tess = lcf.extract_features(tess, 'tid')
+    # tess = lcf.extract_features(tess, '')
 
     # handling missing values:
     tess2 = tess.drop(columns=['toi'])

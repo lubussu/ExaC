@@ -39,11 +39,12 @@ def compute_all(data_in, label_in, balance):
                'Poly SVM': '',
                'RBF SVM': ''}
 
-    df_results = pd.DataFrame(results, index=['Accuracy','Acc Std', 'Precision', 'Recall', 'F1-score', 'ROC AUC', 'Time (s)'])
+    df_results = pd.DataFrame(results,
+                              index=['Accuracy', 'Acc Std', 'Precision', 'Recall', 'F1-score', 'ROC AUC', 'Time (s)'])
 
-    ttest_acc = results
+    ttest = results
 
-    df_accs = pd.DataFrame(ttest_acc, index=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    df_scores = pd.DataFrame(ttest, index=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
     for s in clf_list:
         if s == 'KNN':
@@ -85,22 +86,27 @@ def compute_all(data_in, label_in, balance):
         df_results.loc['ROC AUC', s] = '%.3f' % np.mean(scores['test_roc_auc'])
         df_results.loc['Time (s)', s] = '%.3f' % ex_time
 
-        df_accs[s] = scores['test_accuracy']
+        if balance == 1:
+            df_scores[s] = scores['test_f1']
+        else:
+            df_scores[s] = scores['test_accuracy']
 
         print(s + ' done!')
 
     print(df_results.to_markdown())
 
-    print('\nCV accuracy scores:')
-    print(df_accs.to_markdown())
+    if balance == 1:
+        print('\nCV f1 scores:')
+    else:
+        print('\nCV accuracy scores:')
+    print(df_scores.to_markdown())
 
-    df_ttest = ttest_matrix(df_accs)
+    df_ttest = ttest_matrix(df_scores)
 
     return df_results, df_ttest
 
 
-def ttest_matrix(ttest_accs):
-
+def ttest_matrix(ttest_f1s):
     ttest_dct = {'KNN': '',
                  'Gaussian NB': '',
                  'Bernoulli NB': '',
@@ -115,12 +121,12 @@ def ttest_matrix(ttest_accs):
                                                    'Decision Tree', 'Random Forest', 'Linear SVM', 'Poly SVM',
                                                    'RBF SVM'])
 
-    for c in ttest_accs:
-        for r in ttest_accs:
+    for c in ttest_f1s:
+        for r in ttest_f1s:
             if r == c:
                 ttest_results.loc[r, c] = ' '
                 continue
-            s, p = ttest_ind(ttest_accs[c], ttest_accs[r])
+            s, p = ttest_ind(ttest_f1s[c], ttest_f1s[r])
             if 2.26 > s > -2.26:
                 ttest_results.loc[r, c] = '\x1b[1;31;50m%.3f\x1b[0m' % s
             else:
@@ -132,10 +138,19 @@ def ttest_matrix(ttest_accs):
     return ttest_results
 
 
-path = "../dataset/final_dataset/k2-kepler.csv"
+path = "../dataset/final_dataset/"
+file = input("select file\n")
 
-dataset = pd.read_csv(path)
+dataset = pd.read_csv(path+file+'.csv')
 dataset.drop(dataset.columns[0], axis=1, inplace=True)
+
+values = dataset['disposition'].value_counts() / len(dataset)
+majority = values[values.idxmax()]
+
+if majority > 0.6:
+    balance = 1
+else:
+    balance = 0
 
 dataset['disposition'] = dataset['disposition'].map(int)
 
@@ -150,4 +165,4 @@ X = scaler.fit_transform(X)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-compute_all(X_train, y_train, 1)
+compute_all(X_train, y_train, balance)

@@ -60,8 +60,9 @@ def pre_process():
     kepler_filled.to_csv('../dataset/pp_dataset/kepler_filled.csv')
 
     # remove attributes with a value of corr_m > 0.95 (see on the visual correlation matrix)
-    kepler_filled.drop(columns=['koi_fwm_sra', 'koi_fwm_sdec', 'koi_gmag', 'koi_rmag', 'koi_imag', 'koi_zmag', 'koi_jmag',
-                         'koi_hmag', 'koi_kmag', 'koi_ldm_coeff2'], inplace=True)
+    kepler_filled.drop(columns=['koi_fwm_sra', 'koi_fwm_sdec', 'koi_gmag', 'koi_rmag', 'koi_imag', 'koi_jmag',
+                                'koi_kmag', 'koi_sma', 'koi_ldm_coeff2', 'lc_max', 'lc_min',
+                                'lc_meanAbsDev', 'lc_q1'], inplace=True)
 
     kepler_filled.to_csv('../dataset/pp_dataset/kepler.csv')
     return kepler_filled

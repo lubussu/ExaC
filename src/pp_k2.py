@@ -62,7 +62,8 @@ def pre_process():
 
     # remove attributes with a value of corr_m > 0.95 (see on the visual correlation matrix)
     k2_filled.drop(columns=['tran_flag', 'sy_gaiamag', 'sy_jmag', 'sy_hmag', 'sy_kmag',
-                            'sy_tmag'], inplace=True)
+                            'sy_tmag', 'lc_max', 'lc_min', 'sy_w2mag', 'pl_radj', 'lc_slope',
+                            'lc_meanAbsDev', 'lc_q1', 'ra'], inplace=True)
 
     k2_filled.to_csv('../dataset/pp_dataset/k2.csv')
     return k2_filled
