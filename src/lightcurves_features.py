@@ -28,8 +28,8 @@ def extract_features(dataframe, col_name):
     if col_name == 'tid':
         path = "A:/lightcurves/TESS"
 
-    isFile = os.path.isfile(path)
-    if not isFile:
+    isDir = os.path.isdir(path)
+    if not isDir:
         if col_name == 'kepid':
             path = "/Users/luanabussu/lightcurves/Kepler"
         if col_name == 'tic_id':
