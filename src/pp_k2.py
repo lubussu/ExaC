@@ -36,7 +36,7 @@ def pre_process():
     k2 = k2[k2.columns.drop(list(k2.filter(regex='err')))]  # remove columns that contains err in attribute name
     k2 = k2[k2.columns.drop(list(k2.filter(regex='lim')))]  # remove columns that contains lim in attribute name
 
-    thresh = k2.columns.size * .8
+    thresh = k2.columns.size * .7
     k2.dropna(thresh=thresh, axis=0, inplace=True)  # remove columns with less than 70% of not nan values
 
     # replace dispostion values in numeric values

@@ -17,7 +17,7 @@ def pre_process():
     kepler.drop(
         columns=['rowid', 'kepler_name', 'koi_vet_stat', 'koi_vet_date', 'koi_pdisposition', 'koi_score',
                  'koi_disp_prov', 'koi_comment', 'koi_time0bk', 'koi_time0bk_err1', 'koi_time0bk_err2', 'koi_fittype',
-                 'koi_limbdark_mod', 'koi_parm_prov', 'koi_count', 'koi_tce_plnt_num', 'koi_tce_delivname',
+                 'koi_limbdark_mod', 'koi_parm_prov', 'koi_tce_plnt_num', 'koi_tce_delivname',
                  'koi_trans_mod', 'koi_model_dof', 'koi_datalink_dvr', 'koi_datalink_dvs', 'koi_sparprov'],
         inplace=True)
 

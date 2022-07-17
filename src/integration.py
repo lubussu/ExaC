@@ -34,7 +34,8 @@ def data_integration():
                            "koi_srad": "st_rad",
                            "koi_smass": "st_mass",
                            "koi_sage": "st_age",
-                           "koi_kepmag": "sy_kepmag"}, inplace=True)
+                           "koi_kepmag": "sy_kepmag",
+                           "koi_count": "sy_pnum"}, inplace=True)
 
     tess.rename(columns={"toi": "pl_name", "tfopwg_disp": "disposition"}, inplace=True)
 
