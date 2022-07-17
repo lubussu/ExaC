@@ -1,16 +1,6 @@
-import math
-
 import numpy as np
 import scipy.stats
-import sklearn as sk
 from astropy.io import fits
-from astropy.table import Table
-import matplotlib.pyplot as plt
-from astropy.utils.data import get_pkg_data_filename
-from astropy.visualization import astropy_mpl_style
-from astroquery.mast import Mast
-import lightkurve as lk
-from astroquery.mast import Observations
 import pandas as pd
 import os
 

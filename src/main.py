@@ -1,10 +1,5 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import pp_tess
-import pp_k2
-import pp_kepler
 import integration as di
+import build_model2 as bm
 
 di.data_integration()
+bm.build_model("../dataset/final_dataset/k2-kepler.csv")

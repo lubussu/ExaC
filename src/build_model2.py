@@ -6,19 +6,16 @@ import pandas as pd
 import numpy as np
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_validate, train_test_split, cross_val_score, StratifiedKFold
+from sklearn.model_selection import cross_validate, train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import PolynomialFeatures, StandardScaler
-from sklearn.pipeline import make_pipeline
-from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import mean_squared_error
 from imblearn.over_sampling import SMOTE
-from collections import Counter
-from sklearn.naive_bayes import GaussianNB, MultinomialNB, ComplementNB, BernoulliNB, CategoricalNB
-from sklearn.tree import DecisionTreeClassifier
-from scipy.stats import ttest_ind
-from termcolor import colored
+from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import cross_val_predict
+from util.object_handling import saveObject
+
 
 def KNN_trial(X, y):
     sqrt = math.trunc(math.sqrt(len(X)))
@@ -107,43 +104,44 @@ def compute_all(data, label, balance):
     return df_results, clf
 
 
-path = "../dataset/final_dataset/k2-kepler.csv"
+def build_model(path):
+    dataset = pd.read_csv(path, on_bad_lines='skip')
+    dataset.drop(dataset.columns[0], axis=1, inplace=True)
 
-dataset = pd.read_csv(path, on_bad_lines='skip')
-dataset.drop(dataset.columns[0], axis=1, inplace=True)
+    values = dataset['disposition'].value_counts() / len(dataset)
+    majority = values[values.idxmax()]
 
-values = dataset['disposition'].value_counts() / len(dataset)
-majority = values[values.idxmax()]
+    if majority > 0.6:
+        balance = 1
+    else:
+        balance = 0
 
-if majority > 0.6:
-    balance = 1
-else:
-    balance = 0
+    dataset['disposition'] = dataset['disposition'].map(int)
 
-dataset['disposition'] = dataset['disposition'].map(int)
+    dataset.drop(columns=["pl_name"], inplace=True)
 
-dataset.drop(columns=["pl_name"], inplace=True)
+    X, y = dataset, dataset.disposition.values
 
-X, y = dataset, dataset.disposition.values
+    X.drop(columns=['disposition'], inplace=True)
 
-X.drop(columns=['disposition'], inplace=True)
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
 
-scaler = StandardScaler()
-X = scaler.fit_transform(X)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+    results, clf = compute_all(X_train, y_train, balance)
+    clf.fit(X_train, y_train)
+    scores = clf.score(X_test, y_test)
+    print(scores)
 
-results, clf = compute_all(X_train, y_train, balance)
-clf.fit(X_train, y_train)
-scores = clf.score(X_test, y_test)
-print(scores)
+    # Feature importance
+    if isinstance(clf, RandomForestClassifier):
+        importances = clf.feature_importances_
+        forest_importances = pd.Series(importances, index=dataset.columns).sort_values(ascending=True)
 
-#Feature importance
-if isinstance(clf, RandomForestClassifier):
-    importances = clf.feature_importances_
-    forest_importances = pd.Series(importances, index=dataset.columns).sort_values(ascending=True)
+        fig, ax = plt.subplots(figsize=(40, 34))
+        forest_importances.plot.barh()
+        ax.set_title("Feature importances Random Forest", fontsize=40)
+        ax.tick_params(axis='y', labelsize=25)
 
-    fig, ax = plt.subplots(figsize = (40, 34))
-    forest_importances.plot.barh()
-    ax.set_title("Feature importances Random Forest", fontsize = 40)
-    ax.tick_params(axis='y',labelsize=25)
+    saveObject(clf, "classifier")

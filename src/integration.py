@@ -10,7 +10,7 @@ import pp_kepler
 def data_integration():
     kepler = pp_kepler.pre_process()
     k2 = pp_k2.pre_process()
-    tess = pp_tess.pre_process()
+    #tess = pp_tess.pre_process()
 
     kepler.rename(columns={"kepoi_name": "pl_name",
                            "koi_disposition": "disposition",
@@ -36,7 +36,7 @@ def data_integration():
                            "koi_sage": "st_age",
                            "koi_kepmag": "sy_kepmag"}, inplace=True)
 
-    tess.rename(columns={"toi": "pl_name", "tfopwg_disp": "disposition"}, inplace=True)
+    #tess.rename(columns={"toi": "pl_name", "tfopwg_disp": "disposition"}, inplace=True)
 
     kepler.drop(kepler.index[kepler['disposition'] == 2], inplace=True)
     kepler.to_csv('../dataset/final_dataset/kepler.csv')
@@ -44,8 +44,8 @@ def data_integration():
     k2.drop(k2.index[k2['disposition'] == 2], inplace=True)
     k2.to_csv('../dataset/final_dataset/k2.csv')
 
-    tess.drop(tess.index[tess['disposition'] == 2], inplace=True)
-    tess.to_csv('../dataset/final_dataset/tess.csv')
+    #tess.drop(tess.index[tess['disposition'] == 2], inplace=True)
+    #tess.to_csv('../dataset/final_dataset/tess.csv')
 
     common_cols = list(set.intersection(set(k2), set(kepler)))
     k2 = k2[k2.columns.intersection(common_cols)]
@@ -54,10 +54,10 @@ def data_integration():
     dataframe.drop(dataframe.index[dataframe['disposition'] == 2], inplace=True)
     dataframe.to_csv('../dataset/final_dataset/k2-kepler.csv')
 
-    common_cols = list(set.intersection(set(k2), set(kepler), set(tess)))
-    k2 = k2[k2.columns.intersection(common_cols)]
-    kepler = kepler[kepler.columns.intersection(common_cols)]
-    tess = tess[tess.columns.intersection(common_cols)]
-    dataframe = pd.concat([k2, kepler, tess], ignore_index=True)
-    dataframe.drop(dataframe.index[dataframe['disposition'] == 2], inplace=True)
-    dataframe.to_csv('../dataset/final_dataset/all.csv')
+    # common_cols = list(set.intersection(set(k2), set(kepler), set(tess)))
+    # k2 = k2[k2.columns.intersection(common_cols)]
+    # kepler = kepler[kepler.columns.intersection(common_cols)]
+    # tess = tess[tess.columns.intersection(common_cols)]
+    # dataframe = pd.concat([k2, kepler, tess], ignore_index=True)
+    # dataframe.drop(dataframe.index[dataframe['disposition'] == 2], inplace=True)
+    # dataframe.to_csv('../dataset/final_dataset/all.csv')
