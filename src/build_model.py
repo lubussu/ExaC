@@ -1,77 +1,102 @@
 import math
 import time
-from os import truncate
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import scipy.stats
+from matplotlib.legend_handler import HandlerLine2D
 from sklearn import svm
-from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_validate, train_test_split, cross_val_score, StratifiedKFold
+from sklearn.model_selection import cross_validate, train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import PolynomialFeatures, StandardScaler
-from sklearn.pipeline import make_pipeline
-from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import mean_squared_error, auc, roc_curve
 from imblearn.over_sampling import SMOTE
-from collections import Counter
-from sklearn.naive_bayes import GaussianNB, MultinomialNB, ComplementNB, BernoulliNB, CategoricalNB
-from sklearn.tree import DecisionTreeClassifier
-from scipy.stats import ttest_ind
-from termcolor import colored
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import cross_val_predict
+from util.object_handling import saveObject
 
 
-def compute_all(data_in, label_in, balance):
-    clf_list = ['KNN', 'Gaussian NB', 'Bernoulli NB', 'Logistic Regression', 'Decision Tree', 'Random Forest',
-                'Linear SVM', 'Poly SVM', 'RBF SVM']
-    data = data_in
-    label = label_in
+def RF_trial(X, y, X_test, y_test):
+    max_depths = np.linspace(1, X.shape[1], endpoint=True)
+    train_results = []
+    test_results = []
+    for depth in max_depths:
+        rf = RandomForestClassifier(max_depth=int(depth), n_jobs=-1)
+        rf.fit(X, y)
+        train_pred = rf.predict(X)
+        false_positive_rate, true_positive_rate, thresholds = roc_curve(y, train_pred)
+        roc_auc = auc(false_positive_rate, true_positive_rate)
+        train_results.append(roc_auc)
+        y_pred = rf.predict(X_test)
+        false_positive_rate, true_positive_rate, thresholds = roc_curve(y_test, y_pred)
+        roc_auc = auc(false_positive_rate, true_positive_rate)
+        test_results.append(roc_auc)
+
+    plt.plot(max_depths, train_results, 'b', label='Train AUC')
+    plt.plot(max_depths, test_results, 'r', label='Test AUC')
+    diff = [y - x for x, y in zip(test_results, train_results)]
+    diff = list(filter(lambda d: 0 < d < 0.03, diff))
+    depth = int(max_depths[len(diff) - 1])
+    plt.vlines(depth, 0, 1)
+    plt.ylabel('AUC score')
+    plt.xlabel('Tree depth')
+    plt.savefig('../documents/images/max_depth.png')
+    return depth
+
+
+def KNN_trial(X, y):
+    sqrt = math.trunc(math.sqrt(len(X)))
+    error = []
+    low = int(sqrt - sqrt / 3)
+    up = int(sqrt + sqrt / 3)
+    for k in range(low, up):
+        knn = KNeighborsClassifier(n_neighbors=k)
+        y_pred = cross_val_predict(knn, X, y, cv=5)
+        error.append(mean_squared_error(y, y_pred))
+
+    plt.plot(range(low, up), error)
+    plt.show()
+    plt.savefig('../documents/images/best_k.png')
+    return error.index(min(error)) + low
+
+
+def compute_all(data, label, data_t, label_t, balance):
+    clf_list = ['KNN', 'Gaussian NB', 'Logistic Regression', 'Random Forest', 'RBF SVM']
 
     results = {'KNN': '',
                'Gaussian NB': '',
-               'Bernoulli NB': '',
                'Logistic Regression': '',
-               'Decision Tree': '',
                'Random Forest': '',
-               'Linear SVM': '',
-               'Poly SVM': '',
                'RBF SVM': ''}
+
+    df_scores = pd.DataFrame(results, index=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
     df_results = pd.DataFrame(results,
                               index=['Accuracy', 'Acc Std', 'Precision', 'Recall', 'F1-score', 'ROC AUC', 'Time (s)'])
 
-    ttest = results
-
-    df_scores = pd.DataFrame(ttest, index=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    if balance == 1:
+        oversample = SMOTE()
+        data, label = oversample.fit_resample(data, label)
 
     for s in clf_list:
         if s == 'KNN':
-            clf = KNeighborsClassifier()
+            clf = KNeighborsClassifier(KNN_trial(data, label))
         elif s == 'Gaussian NB':
             clf = GaussianNB()
-        elif s == 'Bernoulli NB':
-            clf = BernoulliNB()
         elif s == 'Logistic Regression':
             clf = LogisticRegression(max_iter=200)
-        elif s == 'Decision Tree':
-            clf = DecisionTreeClassifier()
         elif s == 'Random Forest':
-            clf = RandomForestClassifier()
-        elif s == 'Linear SVM':
-            clf = svm.SVC(kernel='linear')
-        elif s == 'Poly SVM':
-            clf = svm.SVC(kernel='poly')
+            depth = RF_trial(data, label, data_t, label_t)
+            clf = RandomForestClassifier(n_estimators=40, max_depth=depth)
         elif s == 'RBF SVM':
             clf = svm.SVC()
         else:
             print("Error in reading the classifiers!")
             break
 
-        if balance == 1:
-            oversample = SMOTE()
-            data, label = oversample.fit_resample(data, label)
+        results[s] = clf
 
         begin = time.time()
         scores = cross_validate(clf, data, label, cv=10, scoring=('accuracy', 'precision', 'recall', 'f1', 'roc_auc'))
@@ -91,78 +116,55 @@ def compute_all(data_in, label_in, balance):
         else:
             df_scores[s] = scores['test_accuracy']
 
-        print(s + ' done!')
-
-    print(df_results.to_markdown())
-
     if balance == 1:
-        print('\nCV f1 scores:')
+        max_score = max(df_results.loc['F1-score'])
+        scores = df_results.loc['F1-score']
+        print('\n*********** CV F1 Scores ***********\n')
     else:
-        print('\nCV accuracy scores:')
+        max_score = max(df_results.loc['Accuracy'])
+        scores = df_results.loc['Accuracy']
+        print('\n*********** CV F1 Accuracy ***********\n')
     print(df_scores.to_markdown())
 
-    df_ttest = ttest_matrix(df_scores)
+    print('\n*********** CV Mean Results ***********\n')
+    print(df_results.to_markdown())
+    print()
 
-    return df_results, df_ttest
-
-
-def ttest_matrix(ttest_f1s):
-    ttest_dct = {'KNN': '',
-                 'Gaussian NB': '',
-                 'Bernoulli NB': '',
-                 'Logistic Regression': '',
-                 'Decision Tree': '',
-                 'Random Forest': '',
-                 'Linear SVM': '',
-                 'Poly SVM': '',
-                 'RBF SVM': ''}
-
-    ttest_results = pd.DataFrame(ttest_dct, index=['KNN', 'Gaussian NB', 'Bernoulli NB', 'Logistic Regression',
-                                                   'Decision Tree', 'Random Forest', 'Linear SVM', 'Poly SVM',
-                                                   'RBF SVM'])
-
-    for c in ttest_f1s:
-        for r in ttest_f1s:
-            if r == c:
-                ttest_results.loc[r, c] = ' '
-                continue
-            s, p = ttest_ind(ttest_f1s[c], ttest_f1s[r])
-            if 2.26 > s > -2.26:
-                ttest_results.loc[r, c] = '\x1b[1;31;50m%.3f\x1b[0m' % s
-            else:
-                ttest_results.loc[r, c] = '%.3f' % s
-
-    print('\nT-test matrix (t-values):')
-    print(ttest_results.to_markdown())
-
-    return ttest_results
+    clf = results[scores[scores == max_score].index[0]]
+    return clf
 
 
-path = "../dataset/final_dataset/"
-file = input("select file\n")
+def build_model(path):
+    file = path.split('/')[-1]
+    print("Building model: " + file)
+    dataset = pd.read_csv(path, on_bad_lines='skip')
+    dataset.drop(dataset.columns[0], axis=1, inplace=True)
 
-dataset = pd.read_csv(path+file+'.csv')
-dataset.drop(dataset.columns[0], axis=1, inplace=True)
+    values = dataset['disposition'].value_counts() / len(dataset)
+    majority = values[values.idxmax()]
 
-values = dataset['disposition'].value_counts() / len(dataset)
-majority = values[values.idxmax()]
+    if majority > 0.6:
+        balance = 1
+    else:
+        balance = 0
 
-if majority > 0.6:
-    balance = 1
-else:
-    balance = 0
+    dataset['disposition'] = dataset['disposition'].map(int)
 
-dataset['disposition'] = dataset['disposition'].map(int)
+    dataset.drop(columns=["pl_name"], inplace=True)
 
-dataset.drop(columns=["pl_name"], inplace=True)
+    X, y = dataset, dataset.disposition.values
 
-X, y = dataset, dataset.disposition.values
+    X.drop(columns=['disposition'], inplace=True)
 
-X.drop(columns=['disposition'], inplace=True)
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
 
-scaler = StandardScaler()
-X = scaler.fit_transform(X)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+    clf = compute_all(X_train, y_train, X_test, y_test, balance)
+    clf.fit(X_train, y_train)
+    scores = clf.score(X_test, y_test)
+    print("Result with test set: ", str(scores))
+    print("-------------------------------------------------------------------------------------------")
 
-compute_all(X_train, y_train, balance)
+    saveObject(clf, "./obj/classifier_"+file.split('.')[0])

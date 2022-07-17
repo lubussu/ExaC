@@ -7,11 +7,7 @@ import pp_k2
 import pp_kepler
 
 
-def data_integration():
-    kepler = pp_kepler.pre_process()
-    k2 = pp_k2.pre_process()
-    #tess = pp_tess.pre_process()
-
+def kepler_rename(kepler):
     kepler.rename(columns={"kepoi_name": "pl_name",
                            "koi_disposition": "disposition",
                            "koi_period": "pl_orbper",
@@ -36,8 +32,14 @@ def data_integration():
                            "koi_sage": "st_age",
                            "koi_kepmag": "sy_kepmag",
                            "koi_count": "sy_pnum"}, inplace=True)
+    return kepler
 
-    #tess.rename(columns={"toi": "pl_name", "tfopwg_disp": "disposition"}, inplace=True)
+
+def data_integration():
+    kepler = pp_kepler.pre_process()
+    k2 = pp_k2.pre_process()
+
+    kepler = kepler_rename(kepler)
 
     kepler.drop(kepler.index[kepler['disposition'] == 2], inplace=True)
     kepler.to_csv('../dataset/final_dataset/kepler.csv')
@@ -45,20 +47,11 @@ def data_integration():
     k2.drop(k2.index[k2['disposition'] == 2], inplace=True)
     k2.to_csv('../dataset/final_dataset/k2.csv')
 
-    #tess.drop(tess.index[tess['disposition'] == 2], inplace=True)
-    #tess.to_csv('../dataset/final_dataset/tess.csv')
-
     common_cols = list(set.intersection(set(k2), set(kepler)))
     k2 = k2[k2.columns.intersection(common_cols)]
     kepler = kepler[kepler.columns.intersection(common_cols)]
     dataframe = pd.concat([k2, kepler], ignore_index=True)
     dataframe.drop(dataframe.index[dataframe['disposition'] == 2], inplace=True)
+    dataframe.to_csv('../dataset/final_dataset/k2-kepler_lc.csv')
+    dataframe = dataframe[dataframe.columns.drop(list(k2.filter(regex='lc_')))]
     dataframe.to_csv('../dataset/final_dataset/k2-kepler.csv')
-
-    # common_cols = list(set.intersection(set(k2), set(kepler), set(tess)))
-    # k2 = k2[k2.columns.intersection(common_cols)]
-    # kepler = kepler[kepler.columns.intersection(common_cols)]
-    # tess = tess[tess.columns.intersection(common_cols)]
-    # dataframe = pd.concat([k2, kepler, tess], ignore_index=True)
-    # dataframe.drop(dataframe.index[dataframe['disposition'] == 2], inplace=True)
-    # dataframe.to_csv('../dataset/final_dataset/all.csv')

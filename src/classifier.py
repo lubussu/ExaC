@@ -1,4 +1,3 @@
 from util.object_handling import loadObject
 
-clf = loadObject("classifier")
-
+clf = loadObject("./obj/classifier_k2-kepler.pkl")
