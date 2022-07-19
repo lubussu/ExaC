@@ -46,7 +46,7 @@ def hopkins_statistic(X):
     return H
 
 
-k2k = pd.read_csv('A://Repositories/Git/ProgettoDM/dataset/final_dataset/k2-kepler.csv', on_bad_lines='skip')
+k2k = pd.read_csv('A://Repositories/Git/ProgettoDM/dataset/final_dataset/k2-kepler_old.csv', on_bad_lines='skip')
 k2k.drop(columns=['Unnamed: 0'], inplace=True)
 
 si = k2k.drop(k2k.index[k2k['disposition'] == 0])
@@ -65,8 +65,7 @@ stat = hopkins_statistic(si)
 
 print(stat)
 
-si.drop(columns=['pl_orbper', 'dec', 'pl_trandep', 'pl_trandur', 'lc_amplitude', 'lc_mean', 'lc_median', 'lc_q3',
-                 'lc_q31', 'lc_resBFR', 'lc_skew', 'lc_kurtosis', 'lc_std', 'st_teff', 'st_rad', 'sy_kepmag'],
+si.drop(columns=['pl_orbper', 'dec', 'pl_trandep', 'pl_trandur', 'st_teff', 'st_rad', 'sy_kepmag'],
         inplace=True)
 
 print(si.columns)

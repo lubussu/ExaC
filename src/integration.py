@@ -1,7 +1,11 @@
+import math
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.impute import KNNImputer
+
 import pp_tess
 import pp_k2
 import pp_kepler
@@ -13,9 +17,7 @@ def kepler_rename(kepler):
                            "koi_period": "pl_orbper",
                            "koi_prad": "pl_rade",
                            "koi_sma": "pl_orbsmax",
-                           "koi_srho": "pl_dens",
                            "koi_eccen": "pl_orbeccen",
-                           "koi_insol": "pl_insol",
                            "koi_teq": "pl_eqt",
                            "koi_incl": "pl_orbincl",
                            "koi_longp": "pl_orblper",
@@ -52,6 +54,24 @@ def data_integration():
     kepler = kepler[kepler.columns.intersection(common_cols)]
     dataframe = pd.concat([k2, kepler], ignore_index=True)
     dataframe.drop(dataframe.index[dataframe['disposition'] == 2], inplace=True)
-    dataframe.to_csv('../dataset/final_dataset/k2-kepler_lc.csv')
-    dataframe = dataframe[dataframe.columns.drop(list(k2.filter(regex='lc_')))]
-    dataframe.to_csv('../dataset/final_dataset/k2-kepler.csv')
+
+    thresh = len(dataframe) * .5
+    dataframe.dropna(thresh=thresh, axis=1, inplace=True)  # remove columns with less than 70% of not nan values
+
+    thresh = dataframe.columns.size * .7
+    dataframe.dropna(thresh=thresh, axis=0, inplace=True)  # remove columns with less than 70% of not nan values
+
+    dataframe.dropna(axis=1, how='all', inplace=True)
+
+    dataframe2 = dataframe.drop(columns=['pl_name', 'disposition'])
+
+    k = math.trunc(math.sqrt(len(dataframe)))
+    imputer = KNNImputer(n_neighbors=k, weights='uniform', metric='nan_euclidean')
+    dataframe_filled = pd.DataFrame(imputer.fit_transform(dataframe2), columns=dataframe2.columns)
+
+    dataframe_filled.insert(0, 'disposition', dataframe['disposition'].values)
+    dataframe_filled.insert(0, 'pl_name', dataframe['pl_name'].values)
+
+    dataframe_filled.to_csv('../dataset/final_dataset/k2-kepler_lc.csv')
+    dataframe_filled = dataframe_filled[dataframe_filled.columns.drop(list(dataframe_filled.filter(regex='lc_')))]
+    dataframe_filled.to_csv('../dataset/final_dataset/k2-kepler.csv')
