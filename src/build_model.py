@@ -1,5 +1,4 @@
 import math
-import pickle
 import time
 
 import matplotlib.pyplot as plt
@@ -16,7 +15,6 @@ from sklearn.metrics import mean_squared_error, auc, roc_curve
 from imblearn.over_sampling import SMOTE
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import cross_val_predict
-import classifier as cf
 from util.object_handling import saveObject
 
 
@@ -142,11 +140,17 @@ def build_model(path):
     dataset = pd.read_csv(path, on_bad_lines='skip')
     dataset.drop(dataset.columns[0], axis=1, inplace=True)
 
+    values = dataset['disposition'].value_counts() / len(dataset)
+    majority = values[values.idxmax()]
+
+    if majority > 0.6:
+        balance = 1
+    else:
+        balance = 0
+
     dataset['disposition'] = dataset['disposition'].map(int)
 
     dataset.drop(columns=["pl_name"], inplace=True)
-    dataset = dataset[dataset.columns.drop(list(dataset.filter(regex='Unnamed')))]
-
 
     X, y = dataset, dataset.disposition.values
 
@@ -157,12 +161,10 @@ def build_model(path):
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-    clf = compute_all(X_train, y_train, X_test, y_test, 1)
+    clf = compute_all(X_train, y_train, X_test, y_test, balance)
     clf.fit(X_train, y_train)
     scores = clf.score(X_test, y_test)
     print("Result with test set: ", str(scores))
     print("-------------------------------------------------------------------------------------------")
 
-    pickle.dump(clf, open('../documents/obj/classifier_'+file.split('.')[0], 'wb'))
-
-
+    saveObject(clf, "./obj/classifier_"+file.split('.')[0])
