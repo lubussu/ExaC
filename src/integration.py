@@ -68,9 +68,12 @@ def data_integration():
 
     dataframe_filled.insert(0, 'disposition', dataframe['disposition'].values)
     dataframe_filled.insert(0, 'pl_name', dataframe['pl_name'].values)
+
     to_classify = dataframe_filled.loc[dataframe_filled["disposition"] == 2]
     dataframe_filled.drop(dataframe_filled.index[dataframe_filled['disposition'] == 2], inplace=True)
     to_classify.to_csv('../dataset/final_dataset/to_classify.csv')
+    confirmed = dataframe_filled.loc[dataframe_filled["disposition"] == 1]
+    confirmed.to_csv('../dataset/pp_dataset/confirmed.csv')
 
     dataframe_filled.to_csv('../dataset/final_dataset/k2-kepler_lc.csv')
     dataframe_filled = dataframe_filled[dataframe_filled.columns.drop(list(dataframe_filled.filter(regex='lc_')))]
