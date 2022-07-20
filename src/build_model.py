@@ -164,5 +164,3 @@ def build_model(path):
     print("-------------------------------------------------------------------------------------------")
 
     pickle.dump(clf, open('../documents/obj/classifier_'+file.split('.')[0], 'wb'))
-
-

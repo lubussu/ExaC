@@ -64,11 +64,5 @@ def pre_process():
                                 'koi_kmag', 'koi_sma', 'koi_ldm_coeff2', 'lc_max', 'lc_min',
                                 'lc_meanAbsDev', 'lc_q1'], inplace=True)
 
-    svolume = (4 / 3) * 3.14 * pow(kepler['koi_srad'], 3)
-    sdens = kepler['koi_smass'] / svolume
-    pdens = sdens * kepler['koi_srho']
-    pmass = pdens * (4 / 3) * 3.14 * pow(kepler['koi_prad'], 3)
-    kepler['pl_masse'] = pd.Series(pmass.values, index=kepler.index)
-
     kepler.to_csv('../dataset/pp_dataset/kepler.csv')
     return kepler
