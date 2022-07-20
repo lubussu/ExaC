@@ -1,12 +1,7 @@
 import math
-
+import os
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.impute import KNNImputer
-
-import pp_tess
 import pp_k2
 import pp_kepler
 
@@ -38,22 +33,24 @@ def kepler_rename(kepler):
 
 
 def data_integration():
-    kepler = pp_kepler.pre_process()
-    k2 = pp_k2.pre_process()
+    path = "../dataset/pp_dataset/"
+    isK2 = os.path.isfile(path+"k2.csv")
+    isKepler = os.path.isfile(path + "kepler.csv")
+    if not isK2:
+        k2 = pp_k2.pre_process()
+    else:
+        k2 = pd.read_csv(path+"k2.csv", on_bad_lines='skip')
+    if not isKepler:
+        kepler = pp_kepler.pre_process()
+    else:
+        kepler = pd.read_csv(path+"kepler.csv", on_bad_lines='skip')
 
     kepler = kepler_rename(kepler)
-
-    kepler.drop(kepler.index[kepler['disposition'] == 2], inplace=True)
-    kepler.to_csv('../dataset/final_dataset/kepler.csv')
-
-    k2.drop(k2.index[k2['disposition'] == 2], inplace=True)
-    k2.to_csv('../dataset/final_dataset/k2.csv')
 
     common_cols = list(set.intersection(set(k2), set(kepler)))
     k2 = k2[k2.columns.intersection(common_cols)]
     kepler = kepler[kepler.columns.intersection(common_cols)]
     dataframe = pd.concat([k2, kepler], ignore_index=True)
-    dataframe.drop(dataframe.index[dataframe['disposition'] == 2], inplace=True)
 
     thresh = len(dataframe) * .5
     dataframe.dropna(thresh=thresh, axis=1, inplace=True)  # remove columns with less than 70% of not nan values
@@ -61,7 +58,7 @@ def data_integration():
     thresh = dataframe.columns.size * .7
     dataframe.dropna(thresh=thresh, axis=0, inplace=True)  # remove columns with less than 70% of not nan values
 
-    dataframe.dropna(axis=1, how='all', inplace=True)
+    #dataframe.dropna(axis=1, how='all', inplace=True)
 
     dataframe2 = dataframe.drop(columns=['pl_name', 'disposition'])
 
@@ -71,7 +68,11 @@ def data_integration():
 
     dataframe_filled.insert(0, 'disposition', dataframe['disposition'].values)
     dataframe_filled.insert(0, 'pl_name', dataframe['pl_name'].values)
+    to_classify = dataframe_filled.loc[dataframe_filled["disposition"] == 2]
+    dataframe_filled.drop(dataframe_filled.index[dataframe_filled['disposition'] == 2], inplace=True)
+    to_classify.to_csv('../dataset/final_dataset/to_classify.csv')
 
     dataframe_filled.to_csv('../dataset/final_dataset/k2-kepler_lc.csv')
     dataframe_filled = dataframe_filled[dataframe_filled.columns.drop(list(dataframe_filled.filter(regex='lc_')))]
     dataframe_filled.to_csv('../dataset/final_dataset/k2-kepler.csv')
+
