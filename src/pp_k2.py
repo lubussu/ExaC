@@ -23,9 +23,6 @@ def pre_process():
                  'st_nspec', 'pl_letter', 'k2_name', 'rastr', 'decstr', 'pl_ntranspec;;;;'],
         inplace=True)
 
-    # thresh = len(k2) * .5
-    # k2.dropna(thresh=thresh, axis=1, inplace=True)  # remove columns with less than 70% of not nan values
-
     nunique = k2.nunique()  # series with numner of unique value for each column
     cols_to_drop = nunique[nunique == 1].index  # indexes of columns with value of nunique == 1
     k2.drop(cols_to_drop, axis=1, inplace=True)
@@ -36,9 +33,6 @@ def pre_process():
     k2 = k2[k2.columns.drop(list(k2.filter(regex='err')))]  # remove columns that contains err in attribute name
     k2 = k2[k2.columns.drop(list(k2.filter(regex='lim')))]  # remove columns that contains lim in attribute name
 
-    # thresh = k2.columns.size * .7
-    # k2.dropna(thresh=thresh, axis=0, inplace=True)  # remove columns with less than 70% of not nan values
-
     # replace dispostion values in numeric values
     k2['disposition'].replace(
         {"FALSE POSITIVE": 0, "CONFIRMED": 1, "CANDIDATE": 2},
@@ -46,19 +40,6 @@ def pre_process():
 
     # feature extraction from lightcurves time series
     k2 = lcf.extract_features(k2, 'tic_id')
-
-    # # handling missing values:
-    # k22 = k2.drop(columns=['pl_name', 'tic_id'])
-    #
-    # k2.dropna(axis=1, how='all', inplace=True)
-    #
-    # k = math.trunc(math.sqrt(len(k2)))
-    # imputer = KNNImputer(n_neighbors=k, weights='uniform', metric='nan_euclidean')
-    # k2_filled = pd.DataFrame(imputer.fit_transform(k22), columns=k22.columns)
-    #
-    # k2_filled.insert(0, 'tic_id', k2['tic_id'].values)
-    # k2_filled.insert(0, 'pl_name', k2['pl_name'].values)
-    # k2_filled.to_csv('../dataset/pp_dataset/k2_filled.csv')
 
     # remove attributes with a value of corr_m > 0.95 (see on the visual correlation matrix)
     k2.drop(columns=['tran_flag', 'sy_gaiamag', 'sy_jmag', 'sy_hmag', 'sy_kmag',

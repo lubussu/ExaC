@@ -55,11 +55,11 @@ def data_integration():
     dataframe = pd.concat([k2, kepler], ignore_index=True)
     dataframe.drop(dataframe.index[dataframe['disposition'] == 2], inplace=True)
 
-    thresh = len(dataframe) * .5
-    dataframe.dropna(thresh=thresh, axis=1, inplace=True)  # remove columns with less than 70% of not nan values
-
     thresh = dataframe.columns.size * .7
-    dataframe.dropna(thresh=thresh, axis=0, inplace=True)  # remove columns with less than 70% of not nan values
+    dataframe.dropna(thresh=thresh, axis=0, inplace=True)  # remove rows with less than 70% of not nan values
+
+    thresh = len(dataframe) * .5
+    dataframe.dropna(thresh=thresh, axis=1, inplace=True)  # remove columns with less than 50% of not nan values
 
     dataframe.dropna(axis=1, how='all', inplace=True)
 
