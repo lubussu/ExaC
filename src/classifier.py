@@ -24,8 +24,10 @@ def classify(op):
     masse = pd.read_csv('/Users/luanabussu/GitHub/ProgettoDM/dataset/K2 Objects of Interests.csv', on_bad_lines='skip')
     masse = masse[['pl_name', 'pl_masse']]
     confirmed = pd.merge(masse, confirmed, on='pl_name')
+    print(len(confirmed))
     confirmed.rename(columns={"pl_masse_x": "pl_masse"}, inplace=True)
-    confirmed.dropna(subset='pl_masse')
+    confirmed.dropna(subset='pl_masse', inplace=True)
+    print(len(confirmed))
 
     if op == 0:
         confirmed.to_csv("../dataset/final_dataset/confirmed_lc.csv")
