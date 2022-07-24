@@ -2,8 +2,10 @@
 import math
 
 import numpy as np
+import seaborn as sns
 from kneed import KneeLocator
 from sklearn.cluster import KMeans
+from sklearn.cluster import OPTICS
 from sklearn.metrics import silhouette_score
 import pandas as pd
 from random import sample
@@ -12,6 +14,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
 from matplotlib import pyplot as plt
+from sklearn.decomposition import PCA
+import scipy.cluster.hierarchy as shc
+from sklearn.cluster import AgglomerativeClustering
+from sklearn import metrics
+from pyclustertend import hopkins
+from pyclustertend import ivat
+from sklearn.preprocessing import scale
 
 
 def hopkins_statistic(X):
@@ -46,41 +55,49 @@ def hopkins_statistic(X):
     return H
 
 
-k2k = pd.read_csv('A://Repositories/Git/ProgettoDM/dataset/final_dataset/k2-kepler_old.csv', on_bad_lines='skip')
-k2k.drop(columns=['Unnamed: 0'], inplace=True)
+df = pd.read_csv('A://Repositories/ProgettoDM/dataset/final_dataset/clustering_filled.csv', on_bad_lines='skip')
+df.drop(columns=['Unnamed: 0'], inplace=True)
 
-si = k2k.drop(k2k.index[k2k['disposition'] == 0])
+print(df.columns)
+print('\n')
 
-pl_ratdom = ((si.pl_ratdor * si.st_rad) / si.st_mass)
-pl_ratdot = ((si.pl_ratdor * si.st_rad) / si.st_teff)
-pl_ratdokm = ((si.pl_ratdor * si.st_rad) / si.sy_kepmag)
+# df.loc[len(df.index)] = [1, 1, 255, 365.2]
+# df.loc[len(df.index)] = [11.2, 318, 110, 4331]
 
-si.insert(9, 'pl_ratdom', pl_ratdom, allow_duplicates=True)
-si.insert(9, 'pl_ratdot', pl_ratdot, allow_duplicates=True)
-si.insert(9, 'pl_ratdokm', pl_ratdokm, allow_duplicates=True)
+data = {'pl_rade': [1, 11.2], 'pl_bmasse': [1, 318], 'pl_eqt': [255, 110], 'pl_orbper': [365.2, 4331]}
+ej = pd.DataFrame(data, index=[0, 1])
 
-si.drop(columns=['pl_name', 'disposition'], inplace=True)
-
-stat = hopkins_statistic(si)
-
-print(stat)
-
-si.drop(columns=['pl_orbper', 'dec', 'pl_trandep', 'pl_trandur', 'st_teff', 'st_rad', 'sy_kepmag'],
-        inplace=True)
-
-print(si.columns)
-
-stat = hopkins_statistic(si)
+si = df[['pl_rade', 'pl_bmasse', 'pl_eqt', 'pl_orbper']]
 
 sidf = si
 
+prt = []
+for c in si.columns:
+    prt.append(c + ' ')
+print(str(prt))
+
+stat = 1 - hopkins(si, 340)
+
 print(stat)
+print('\n')
+
+for col in si.columns:
+    print(col + ' ' + str(si[col].count()))
+
+print("\n")
+
+for col in sidf.columns:
+    print(col + ' ' + str(sidf[col].count()))
+
+print(ej)
+
+hopkins(si, 340)
 
 scaler = StandardScaler()
 si = scaler.fit_transform(si)
 
 kmeans_kwargs = {
-    "init": "random",
+    "init": "k-means++",
     "n_init": 10,
     "max_iter": 300,
     "random_state": 42,
@@ -93,6 +110,7 @@ for k in range(1, 8):
     kmeans.fit(si)
     sse.append(kmeans.inertia_)
 
+plt.figure(figsize=(10, 10))
 plt.plot(range(1, 8), sse)
 plt.xticks(range(1, 8))
 plt.xlabel("Number of Clusters")
@@ -115,28 +133,35 @@ for k in range(2, 8):
     score = silhouette_score(si, kmeans.labels_)
     silhouette_coefficients.append(score)
 
-plt.style.use("fivethirtyeight")
+plt.figure(figsize=(10, 10))
 plt.plot(range(2, 8), silhouette_coefficients)
 plt.xticks(range(2, 8))
 plt.xlabel("Number of Clusters")
 plt.ylabel("Silhouette Coefficient")
 plt.show()
 
+stdsi = pd.DataFrame(si, columns=['pl_rade', 'pl_bmasse', 'pl_eqt', 'pl_orbper'])
+print(stdsi)
+
 # Find epsilon for DBSCAN
-neighbors = NearestNeighbors(n_neighbors=len(sidf.columns) * 2)
-neighbors_fit = neighbors.fit(sidf)
-distances, indices = neighbors_fit.kneighbors(sidf)
+neighbors = NearestNeighbors(n_neighbors=len(stdsi.columns) * 2)
+neighbors_fit = neighbors.fit(stdsi)
+distances, indices = neighbors_fit.kneighbors(stdsi)
 
 distances = np.sort(distances, axis=0)
 distances = distances[:, 1]
 
-plt.xlim(2800, 3300)
-plt.ylim(0, 20)
+plt.figure(figsize=(10, 10))
+plt.title("MinPts: " + str(len(stdsi.columns) * 2))
+plt.xlabel("K-Distance")
+plt.ylabel("Sorted object distance")
+plt.xlim(300, 350)
+plt.ylim(0, 1.5)
 plt.plot(distances)
 plt.show()
 
 # Instantiate k-means
-kmeans = KMeans(n_clusters=3)
+kmeans = KMeans(n_clusters=4)
 
 # Fit the algorithms to the features
 kmeans.fit(si)
@@ -150,38 +175,244 @@ print(kmeans.labels_)
 
 print(kmeans_silhouette)
 
-label = kmeans.fit_predict(sidf)
+plt.figure(figsize=(10, 10))
+plt.title("Exo-Planets Dendrogram")
 
-print(label)
-
-# filter rows of original data
-filtered_label0 = sidf[label == 0]
-
-filtered_label1 = sidf[label == 1]
-
-filtered_label2 = sidf[label == 2]
-
-# Plotting the results
-plt.scatter(filtered_label0['pl_ratdor'], filtered_label0['pl_ratdom'], color='red')
-plt.scatter(filtered_label1['pl_ratdor'], filtered_label1['pl_ratdom'], color='green')
-plt.scatter(filtered_label2['pl_ratdor'], filtered_label2['pl_ratdom'], color='blue')
+clusters = shc.linkage(si,
+                       method='ward',
+                       metric="euclidean")
+shc.dendrogram(Z=clusters)
+# plt.axhline(y = 17, color = 'r', linestyle = '-')
 plt.show()
 
-dbscan = DBSCAN(eps=8, min_samples=len(sidf.columns) * 2)
+# filter rows of original data
+sidf['label'] = kmeans.labels_
 
-labeldb = dbscan.fit_predict(sidf)
+filtered_label0 = sidf[sidf.label == 0]
 
-print(labeldb)
+filtered_label1 = sidf[sidf.label == 1]
+
+filtered_label2 = sidf[sidf.label == 2]
+
+filtered_label3 = sidf[sidf.label == 3]
+
+filtered_label4 = sidf[sidf.label == 4]
+
+filtered_label5 = sidf[sidf.label == 5]
+
+sidf.drop(columns=['label'], inplace=True)
+
+visited = []
+
+for col1 in sidf.columns:
+    visited.append(col1)
+    for col2 in sidf.columns:
+        if col2 not in visited:
+            plt.figure(figsize=(10, 10))
+            plt.scatter(filtered_label0[col1], filtered_label0[col2], color='yellow')
+            plt.scatter(filtered_label1[col1], filtered_label1[col2], color='red')
+            plt.scatter(filtered_label2[col1], filtered_label2[col2], color='green')
+            plt.scatter(filtered_label3[col1], filtered_label3[col2], color='blue')
+            plt.scatter(filtered_label4[col1], filtered_label4[col2], color='green')
+            plt.scatter(filtered_label5[col1], filtered_label5[col2], color='black')
+            earthx = ej.at[0, col1]
+            earthy = ej.at[0, col2]
+            jupiterx = ej.at[1, col1]
+            jupitery = ej.at[1, col2]
+            plt.plot([earthx, jupiterx], [earthy, jupitery], marker='*', ls='none', ms=20)
+            plt.annotate("Earth", (earthx, earthy), fontsize=15)
+            plt.annotate("Jupiter", (jupiterx, jupitery), fontsize=15)
+            plt.xlabel(col1)
+            plt.ylabel(col2)
+            plt.xscale('log')
+            plt.yscale('log')
+            plt.show()
+
+col1 = 'pl_orbper'
+col2 = 'pl_eqt'
+
+plt.figure(figsize=(10, 10))
+plt.scatter(filtered_label0[col1], filtered_label0[col2], color='yellow')
+plt.scatter(filtered_label1[col1], filtered_label1[col2], color='red')
+plt.scatter(filtered_label2[col1], filtered_label2[col2], color='blue')
+plt.scatter(filtered_label3[col1], filtered_label3[col2], color='green')
+plt.scatter(filtered_label4[col1], filtered_label4[col2], color='orange')
+plt.scatter(filtered_label5[col1], filtered_label5[col2], color='black')
+earthx = ej.at[0, col1]
+earthy = ej.at[0, col2]
+jupiterx = ej.at[1, col1]
+jupitery = ej.at[1, col2]
+plt.plot([earthx, jupiterx], [earthy, jupitery], marker='*', ls='none', ms=20)
+plt.annotate("Earth", (earthx, earthy), fontsize=15)
+plt.annotate("Jupiter", (jupiterx, jupitery), fontsize=15)
+plt.xlabel(col1)
+plt.ylabel(col2)
+plt.xscale('log')
+plt.yscale('log')
+plt.show()
+
+clustering_model = AgglomerativeClustering(n_clusters=4, affinity='euclidean', linkage='complete')
+clustering_model.fit(si)
+clustering_model.labels_
 
 # filter rows of original data
-filtered_label0 = sidf[labeldb == 0]
+sidf['label'] = clustering_model.labels_
 
-filtered_label1 = sidf[labeldb == 1]
+filtered_label0 = sidf[sidf.label == 0]
 
-filtered_label2 = sidf[labeldb == -1]
+filtered_label1 = sidf[sidf.label == 1]
 
-# Plotting the results
-plt.scatter(filtered_label0['pl_ratdor'], filtered_label0['pl_ratdom'], color='red')
-plt.scatter(filtered_label1['pl_ratdor'], filtered_label1['pl_ratdom'], color='green')
-plt.scatter(filtered_label2['pl_ratdor'], filtered_label2['pl_ratdom'], color='blue')
+filtered_label2 = sidf[sidf.label == 2]
+
+filtered_label3 = sidf[sidf.label == 3]
+
+filtered_label4 = sidf[sidf.label == 4]
+
+filtered_label5 = sidf[sidf.label == 5]
+
+sidf.drop(columns=['label'], inplace=True)
+
+visited = []
+
+for col1 in sidf.columns:
+    visited.append(col1)
+    for col2 in sidf.columns:
+        if col2 not in visited:
+            plt.figure(figsize=(10, 10))
+            plt.scatter(filtered_label0[col1], filtered_label0[col2], color='yellow')
+            plt.scatter(filtered_label1[col1], filtered_label1[col2], color='red')
+            plt.scatter(filtered_label2[col1], filtered_label2[col2], color='green')
+            plt.scatter(filtered_label3[col1], filtered_label3[col2], color='blue')
+            plt.scatter(filtered_label4[col1], filtered_label4[col2], color='orange')
+            plt.scatter(filtered_label5[col1], filtered_label5[col2], color='black')
+            earthx = ej.at[0, col1]
+            earthy = ej.at[0, col2]
+            jupiterx = ej.at[1, col1]
+            jupitery = ej.at[1, col2]
+            plt.plot([earthx, jupiterx], [earthy, jupitery], marker='*', ls='none', ms=20)
+            plt.annotate("Earth", (earthx, earthy), fontsize=15)
+            plt.annotate("Jupiter", (jupiterx, jupitery), fontsize=15)
+            plt.xlabel(col1)
+            plt.ylabel(col2)
+            plt.xscale('log')
+            plt.yscale('log')
+            plt.show()
+
+col1 = 'pl_orbper'
+col2 = 'pl_eqt'
+
+plt.figure(figsize=(10, 10))
+plt.scatter(filtered_label0[col1], filtered_label0[col2], color='red')
+plt.scatter(filtered_label1[col1], filtered_label1[col2], color='green')
+plt.scatter(filtered_label2[col1], filtered_label2[col2], color='blue')
+plt.scatter(filtered_label3[col1], filtered_label3[col2], color='yellow')
+plt.scatter(filtered_label4[col1], filtered_label4[col2], color='orange')
+plt.scatter(filtered_label5[col1], filtered_label5[col2], color='black')
+earthx = ej.at[0, col1]
+earthy = ej.at[0, col2]
+jupiterx = ej.at[1, col1]
+jupitery = ej.at[1, col2]
+plt.plot([earthx, jupiterx], [earthy, jupitery], marker='*', ls='none', ms=20)
+plt.annotate("Earth", (earthx, earthy), fontsize=15)
+plt.annotate("Jupiter", (jupiterx, jupitery), fontsize=15)
+plt.xlabel(col1)
+plt.ylabel(col2)
+plt.xscale('log')
+plt.yscale('log')
 plt.show()
+
+dbscan = DBSCAN(eps=0.5, min_samples=8)
+dbscan.fit(stdsi)
+dbscan.labels_
+
+# filter rows of original data
+sidf['label'] = dbscan.labels_
+
+filtered_label0 = sidf[sidf.label == 0]
+
+filtered_label1 = sidf[sidf.label == 1]
+
+filtered_label2 = sidf[sidf.label == 2]
+
+filtered_label3 = sidf[sidf.label == 3]
+
+filtered_label4 = sidf[sidf.label == 4]
+
+filtered_label5 = sidf[sidf.label == -1]
+
+sidf.drop(columns=['label'], inplace=True)
+
+visited = []
+
+print(len(filtered_label5))
+print(len(filtered_label0))
+
+for col1 in sidf.columns:
+    visited.append(col1)
+    for col2 in sidf.columns:
+        if col2 not in visited:
+            plt.figure(figsize=(10, 10))
+            plt.scatter(filtered_label0[col1], filtered_label0[col2], color='green')
+            plt.scatter(filtered_label1[col1], filtered_label1[col2], color='red')
+            plt.scatter(filtered_label2[col1], filtered_label2[col2], color='yellow')
+            plt.scatter(filtered_label3[col1], filtered_label3[col2], color='blue')
+            plt.scatter(filtered_label4[col1], filtered_label4[col2], color='orange')
+            plt.scatter(filtered_label5[col1], filtered_label5[col2], color='black')
+            earthx = ej.at[0, col1]
+            earthy = ej.at[0, col2]
+            jupiterx = ej.at[1, col1]
+            jupitery = ej.at[1, col2]
+            plt.plot([earthx, jupiterx], [earthy, jupitery], marker='*', ls='none', ms=20)
+            plt.annotate("Earth", (earthx, earthy), fontsize=15)
+            plt.annotate("Jupiter", (jupiterx, jupitery), fontsize=15)
+            plt.xlabel(col1)
+            plt.ylabel(col2)
+            plt.xscale('log')
+            plt.yscale('log')
+            plt.show()
+
+clustering_model = AgglomerativeClustering(n_clusters=5, affinity='euclidean', linkage='ward')
+clustering_model.fit(si)
+clustering_model.labels_
+
+sidf['label'] = clustering_model.labels_
+
+filtered_label0 = sidf[sidf.label == 0]
+
+filtered_label1 = sidf[sidf.label == 1]
+
+filtered_label2 = sidf[sidf.label == 2]
+
+filtered_label3 = sidf[sidf.label == 3]
+
+filtered_label4 = sidf[sidf.label == 4]
+
+filtered_label5 = sidf[sidf.label == 5]
+
+sidf.drop(columns=['label'], inplace=True)
+
+visited = []
+
+for col1 in sidf.columns:
+    visited.append(col1)
+    for col2 in sidf.columns:
+        if col2 not in visited:
+            plt.figure(figsize=(10, 10))
+            plt.scatter(filtered_label0[col1], filtered_label0[col2], color='red')
+            plt.scatter(filtered_label1[col1], filtered_label1[col2], color='green')
+            plt.scatter(filtered_label2[col1], filtered_label2[col2], color='blue')
+            plt.scatter(filtered_label3[col1], filtered_label3[col2], color='yellow')
+            plt.scatter(filtered_label4[col1], filtered_label4[col2], color='orange')
+            plt.scatter(filtered_label5[col1], filtered_label5[col2], color='black')
+            earthx = ej.at[0, col1]
+            earthy = ej.at[0, col2]
+            jupiterx = ej.at[1, col1]
+            jupitery = ej.at[1, col2]
+            plt.plot([earthx, jupiterx], [earthy, jupitery], marker='*', ls='none', ms=20)
+            plt.annotate("Earth", (earthx, earthy), fontsize=15)
+            plt.annotate("Jupiter", (jupiterx, jupitery), fontsize=15)
+            plt.xlabel(col1)
+            plt.ylabel(col2)
+            plt.xscale('log')
+            plt.yscale('log')
+            plt.show()

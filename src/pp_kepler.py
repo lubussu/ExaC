@@ -28,7 +28,7 @@ def pre_process():
     cols_unique_drop = nunique[nunique == 1].index  # indexes of columns with value of nunique == 1
     kepler.drop(cols_unique_drop, axis=1, inplace=True)
 
-    kepler.drop_duplicates(subset='kepoi_name', keep='first')  # remove rows with duplicate value of kepoi_name column
+    kepler.drop_duplicates(subset='kepoi_name', keep='first', inplace=True)  # remove rows with duplicate value of kepoi_name column
 
     kepler = kepler[
         kepler.columns.drop(list(kepler.filter(regex='err')))]  # remove columns that contains err in attribute name
