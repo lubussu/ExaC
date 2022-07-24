@@ -1,11 +1,6 @@
-# importing the required libraries
-import math
-
 import numpy as np
-import seaborn as sns
 from kneed import KneeLocator
 from sklearn.cluster import KMeans
-from sklearn.cluster import OPTICS
 from sklearn.metrics import silhouette_score
 import pandas as pd
 from random import sample
@@ -14,13 +9,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
 from matplotlib import pyplot as plt
-from sklearn.decomposition import PCA
 import scipy.cluster.hierarchy as shc
 from sklearn.cluster import AgglomerativeClustering
-from sklearn import metrics
 from pyclustertend import hopkins
-from pyclustertend import ivat
-from sklearn.preprocessing import scale
 
 
 def hopkins_statistic(X):

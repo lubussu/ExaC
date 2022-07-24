@@ -58,8 +58,6 @@ def data_integration():
     thresh = len(dataframe) * .5
     dataframe.dropna(thresh=thresh, axis=1, inplace=True)  # remove columns with less than 70% of not nan values
 
-    #dataframe.dropna(axis=1, how='all', inplace=True)
-
     dataframe2 = dataframe.drop(columns=['pl_name', 'disposition'])
 
     k = math.trunc(math.sqrt(len(dataframe)))
@@ -74,9 +72,7 @@ def data_integration():
     to_classify.to_csv('../dataset/final_dataset/to_classify.csv')
     confirmed = dataframe_filled.loc[dataframe_filled["disposition"] == 1]
     confirmed.to_csv('../dataset/pp_dataset/confirmed.csv')
-    print(len(confirmed))
 
     dataframe_filled.to_csv('../dataset/final_dataset/k2-kepler_lc.csv')
     dataframe_filled = dataframe_filled[dataframe_filled.columns.drop(list(dataframe_filled.filter(regex='lc_')))]
     dataframe_filled.to_csv('../dataset/final_dataset/k2-kepler.csv')
-

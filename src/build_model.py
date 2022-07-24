@@ -5,7 +5,7 @@ import time
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from matplotlib.legend_handler import HandlerLine2D
+from imblearn.over_sampling import SMOTE
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_validate, train_test_split
@@ -13,22 +13,21 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import mean_squared_error, auc, roc_curve
-from imblearn.over_sampling import SMOTE
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import cross_val_predict
-import classifier as cf
-from util.object_handling import saveObject
+from sklearn.decomposition import PCA
 
 
-def RF_trial(X, y, X_test, y_test):
+def RF_trial(X, y):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
     max_depths = np.linspace(1, X.shape[1], endpoint=True)
     train_results = []
     test_results = []
     for depth in max_depths:
         rf = RandomForestClassifier(max_depth=int(depth), n_jobs=-1)
         rf.fit(X, y)
-        train_pred = rf.predict(X)
-        false_positive_rate, true_positive_rate, thresholds = roc_curve(y, train_pred)
+        train_pred = rf.predict(X_train)
+        false_positive_rate, true_positive_rate, thresholds = roc_curve(y_train, train_pred)
         roc_auc = auc(false_positive_rate, true_positive_rate)
         train_results.append(roc_auc)
         y_pred = rf.predict(X_test)
@@ -64,7 +63,7 @@ def KNN_trial(X, y):
     return error.index(min(error)) + low
 
 
-def compute_all(data, label, data_t, label_t, balance):
+def compute_all(data, label, balance):
     clf_list = ['KNN', 'Gaussian NB', 'Logistic Regression', 'Random Forest', 'RBF SVM']
 
     results = {'KNN': '',
@@ -90,7 +89,7 @@ def compute_all(data, label, data_t, label_t, balance):
         elif s == 'Logistic Regression':
             clf = LogisticRegression(max_iter=200)
         elif s == 'Random Forest':
-            depth = RF_trial(data, label, data_t, label_t)
+            depth = RF_trial(data, label)
             clf = RandomForestClassifier(n_estimators=40, max_depth=depth)
         elif s == 'RBF SVM':
             clf = svm.SVC()
@@ -147,7 +146,6 @@ def build_model(path):
     dataset.drop(columns=["pl_name"], inplace=True)
     dataset = dataset[dataset.columns.drop(list(dataset.filter(regex='Unnamed')))]
 
-
     X, y = dataset, dataset.disposition.values
 
     X.drop(columns=['disposition'], inplace=True)
@@ -156,11 +154,22 @@ def build_model(path):
     X = scaler.fit_transform(X)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-
-    clf = compute_all(X_train, y_train, X_test, y_test, 1)
+    clf = compute_all(X_train, y_train, 1)
     clf.fit(X_train, y_train)
     scores = clf.score(X_test, y_test)
     print("Result with test set: ", str(scores))
     print("-------------------------------------------------------------------------------------------")
 
-    pickle.dump(clf, open('../documents/obj/classifier_'+file.split('.')[0], 'wb'))
+    pca = PCA(n_components=15)
+    pca_train, pca_test = pca.fit_transform(X_train), pca.transform(X_test)
+
+    clf_pca = compute_all(pca_train, y_train, 1)
+    clf_pca.fit(pca_train, y_train)
+    pca_scores = clf_pca.score(pca_test, y_test)
+    print("Result with test set after PCA: ", str(pca_scores))
+    print("-------------------------------------------------------------------------------------------")
+
+    if scores > pca_scores:
+        pickle.dump(clf, open('../documents/obj/classifier_'+file.split('.')[0], 'wb'))
+    else:
+        pickle.dump(clf_pca, open('../documents/obj/pca_classifier_'+file.split('.')[0], 'wb'))
